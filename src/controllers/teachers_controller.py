@@ -2,6 +2,7 @@
 from flask import Blueprint, request
 from init import db
 from models.teacher import Teacher, TeacherSchema
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Adding a blueprint for teachers. This will automatically add the prefix teachers to the
 # start of all URL's with this blueprint. 
@@ -10,7 +11,7 @@ teachers_bp = Blueprint('teachers', __name__, url_prefix='/teachers') # teachers
 #CREATE
 # A route to create one new teacher resource 
 @teachers_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_teacher():
     # Create a new Teacher model instance
     data = TeacherSchema().load(request.json)
@@ -57,7 +58,7 @@ def get_one_teacher(employee_id):
 
 # UPDATE
 @teachers_bp.route('/<int:employee_id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
+@jwt_required()
 def update_one_teacher(employee_id):
     # A route to update one teacher resource
     stmt = db.select(Teacher).filter_by(employee_id=employee_id)
@@ -81,7 +82,7 @@ def update_one_teacher(employee_id):
 
 # DELETE
 @teachers_bp.route('/<int:employee_id>/', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_one_teacher(employee_id):
     # authorize()
     # A route to delete one teacher resource

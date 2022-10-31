@@ -50,7 +50,7 @@ def auth_login():
     else:
         return {'error': 'Invalid email or password'}, 401
     
-
+# I can import this into other modules and call it whenever it is needed. 
 def authorize():
     employee_id = get_jwt_identity()
     stmt = db.select(Teacher).filter_by(employee_id=employee_id)
