@@ -40,20 +40,20 @@ def auth_register():
 @auth_bp.route('/login/', methods=['POST'])
 def auth_login():
     # Find a user by email address
-    stmt = db.select(Teacher).filter_by(email=request.json['email'])
-    user = db.session.scalar(stmt)
+    stmt = db.select(Teacher).filter_by(school_email=request.json['school_email'])
+    teacher = db.session.scalar(stmt)
     # If user exists and password is correct
-    if user and bcrypt.check_password_hash(user.password, request.json['password']):
+    if teacher and bcrypt.check_password_hash(teacher.password, request.json['password']):
         # return UserSchema(exclude=['password']).dump(user)
-        token = create_access_token(identity=str(user.id), expires_delta=timedelta(days=1))
-        return {'email': user.email, 'token': token, 'is_admin': user.is_admin}
+        token = create_access_token(identity=str(teacher.employee_id), expires_delta=timedelta(days=1))
+        return {'email': teacher.school_email, 'token': token}
     else:
         return {'error': 'Invalid email or password'}, 401
     
 
 def authorize():
-    user_id = get_jwt_identity()
-    stmt = db.select(Teacher).filter_by(id=user_id)
-    user = db.session.scalar(stmt)
-    if not user.is_admin:
-        abort(401)
+    employee_id = get_jwt_identity()
+    stmt = db.select(Teacher).filter_by(employee_id=employee_id)
+    teacher = db.session.scalar(stmt)
+    # if not user.is_admin:
+    #     abort(401)

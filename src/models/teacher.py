@@ -9,7 +9,7 @@ class Teacher(db.Model):
     first_name = db.Column(db.String(50))
     middle_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
-    school_email = db.Column(db.String(50))
+    school_email = db.Column(db.String, nullable=False, unique=True)
     personal_email = db.Column(db.String(50))
     phone = db.Column(db.String(50))
     employment_status = db.Column(db.String(50))
