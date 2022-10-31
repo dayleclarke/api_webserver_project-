@@ -1,4 +1,4 @@
-from init import db, ma
+from init import db, ma # Imports start at the root folder. 
 from marshmallow import fields
 
 class Teacher(db.Model):
@@ -17,11 +17,13 @@ class Teacher(db.Model):
     # dob = db.Column(db.Date) 
     # hired_date = db.Column(db.Date)
     gender = db.Column(db.String(50))
-    password = db.Column(db.String, nullable=False)
+    password = db.Column(db.String)
 
     
 
 class TeacherSchema(ma.Schema):
+    # This allows the models to be serialized and deserialized to and from JSON.
+    #  Here we only have to list the fields we want to be jsonified.  We don't want to include a password in the schema even though it's encrypted. 
     class Meta:
-        fields = ('employee_id', 'title', 'first_name', 'middle_name', 'last_name', 'school_email', 'personal_email', 'phone', 'employment_status', 'dob', 'hired_date', 'covid_vaccination_status', 'gender', 'password', 'payscale')
+        fields = ('employee_id', 'title', 'first_name', 'middle_name', 'last_name', 'school_email', 'personal_email', 'phone', 'employment_status', 'pay_scale','gender', 'password')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order. 
