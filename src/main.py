@@ -2,6 +2,7 @@ from flask import Flask
 from init import db, ma, bcrypt
 from controllers.cli_controller import db_commands
 from controllers.teachers_controller import teachers_bp 
+from controllers.auth_controller import auth_bp 
 
 # from controllers.cards_controller import cards_bp # this will import the cards blueprint. 
 import os
@@ -27,6 +28,7 @@ def create_app():
 
     app.register_blueprint(db_commands)
     app.register_blueprint(teachers_bp) 
+    app.register_blueprint(auth_bp) 
 
 
     
