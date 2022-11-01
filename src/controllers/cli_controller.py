@@ -2,6 +2,7 @@ from flask import Blueprint
 from init import db, bcrypt
 from datetime import date
 from models.user import User
+from models.student import Student
 from models.subject_class import SubjectClass
 
 db_commands = Blueprint('db', __name__)
@@ -44,9 +45,41 @@ def seed_db():
             dob = '1985-04-07',
             gender = 'male',
             type = 'teacher'
+        ),
+        User(
+            title = 'Miss',
+            first_name = 'Isabelle',
+            middle_name = 'Margaret',
+            last_name = 'Smith',
+            password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
+            school_email = 'Isabelle.Smith@bgbc.edu.au',
+            personal_email = 'issysmith1@gmail.com',
+            phone = '0405301444',
+            dob = '2004-04-07',
+            gender = 'female',
+            type = 'student'
         )
     ]
     db.session.add_all(users)
+    db.session.commit()
+
+    students = [        
+        Student(
+            homegroup = 'WH01',
+            enrollment_date = '2020-01-01',
+            year_level = 9,
+            birth_country = 'Australia',
+            user = users[2]
+        ),
+        Student(
+            homegroup = 'WH05',
+            enrollment_date = '2021-01-01',
+            year_level = 10,
+            birth_country = 'Australia',
+            user = users[2]
+        )
+    ]
+    db.session.add_all(students)
     db.session.commit()
     
     subject_classes = [

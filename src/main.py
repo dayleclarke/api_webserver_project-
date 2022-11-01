@@ -3,6 +3,7 @@ from init import db, ma, bcrypt, jwt
 from controllers.cli_controller import db_commands
 from controllers.users_controller import users_bp 
 from controllers.auth_controller import auth_bp 
+from controllers.students_controller import students_bp 
 
 # from controllers.cards_controller import cards_bp # this will import the cards blueprint. 
 import os
@@ -33,7 +34,8 @@ def create_app():
     # register the following blueprints:
 
     app.register_blueprint(db_commands)
-    app.register_blueprint(users_bp) 
+    app.register_blueprint(users_bp)
+    app.register_blueprint(students_bp)  
     app.register_blueprint(auth_bp) 
     
 

@@ -1,6 +1,6 @@
 # This module contains the CRUD operations for the users model.
 from flask import Blueprint, request
-from init import db
+from init import db, bcrypt
 from models.user import User, UserSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -11,7 +11,7 @@ users_bp = Blueprint('users', __name__, url_prefix='/users') # users is a resour
 #CREATE
 # A route to create one new user resource 
 @users_bp.route('/', methods=['POST'])
-@jwt_required()
+# @jwt_required()
 def create_user():
     # Create a new Teacher model instance
     data = UserSchema().load(request.json)
@@ -21,12 +21,13 @@ def create_user():
         first_name = data['first_name'],
         middle_name = data['middle_name'],
         last_name = data['last_name'],
+        password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
         school_email = data['school_email'],
         personal_email = data['personal_email'],
         phone = data['phone'],
-        employment_status = data['employment_status'],
-        pay_scale = data['pay_scale'],
-        gender = data['gender'] 
+        dob = data['dob'],
+        gender = data['gender'],
+        type = data['type'] 
     )
     # Add and commit card to DB
     db.session.add(user)
@@ -44,7 +45,7 @@ def get_all_user():
     return UserSchema(many=True).dump(users)
 
 # This specifies a restful parameter of employee_id that will be an integer. It will only match if the value passed in is an integer. 
-@users_bp.route('/<int:employee_id>/')
+@users_bp.route('/<int:id>/')
 def get_one_user(id):
     # A route to retrieve a single user resource based on their employee_id
     stmt = db.select(User).filter_by(id=id)
@@ -54,11 +55,11 @@ def get_one_user(id):
     else:
         # This is the error that will be returned if there is no employee with that ID.
         #  This will return a not found 404 error.  
-        return {'error': f'User not found with id {id}'}, 404
+        return {'error': f'User not found with id {id}.'}, 404
 
 # UPDATE
 @users_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
-@jwt_required()
+# @jwt_required()
 def update_one_user(id):
     # A route to update one user resource
     stmt = db.select(User).filter_by(id=id)
@@ -68,12 +69,14 @@ def update_one_user(id):
         user.first_name = request.json.get('first_name') or user.first_name
         user.middle_name = request.json.get('middle_name') or user.middle_name
         user.last_name = request.json.get('last_name') or user.last_name
+        #password?
         user.school_email = request.json.get('school_email') or user.school_email
         user.personal_email =request.json.get('personal_email') or user.personal_email
         user.phone = request.json.get('phone') or user.phone
-        user.employment_status = request.json.get('employment_status') or user.employment_status
-        user.pay_scale = request.json.get('pay_scale') or user.pay_scale
+        user.dob = request.json.get('dob') or user.dob
         user.gender = request.json.get('gender') or user.gender
+        user.type = request.json.get('type') or user.type
+
         
         db.session.commit()      
         return UserSchema().dump(user)
@@ -93,7 +96,7 @@ def delete_one_user(id):
     if user:
         db.session.delete(user)
         db.session.commit()
-        return {'message': f'The employee records for {user.first_name} {user.last_name} were deleted successfully'}
+        return {'message': f'The records for {user.first_name} {user.last_name} were deleted successfully'}
     # If the employee_id doesn't exist in the database return a not found (404) error
     else:
         return {'error': f'User not found with id {id}'}, 404
