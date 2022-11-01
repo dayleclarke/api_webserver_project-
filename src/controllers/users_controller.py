@@ -42,7 +42,7 @@ def get_all_user():
     # A route to return all instances of the users resource in assending alphabetical order by last_name
     stmt = db.select(User).order_by(User.last_name)
     users = db.session.scalars(stmt)
-    return UserSchema(many=True).dump(users)
+    return UserSchema(many=True, exclude=['password']).dump(users)
 
 # This specifies a restful parameter of employee_id that will be an integer. It will only match if the value passed in is an integer. 
 @users_bp.route('/<int:id>/')

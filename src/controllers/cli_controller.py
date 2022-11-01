@@ -58,6 +58,19 @@ def seed_db():
             dob = '2004-04-07',
             gender = 'female',
             type = 'student'
+        ),
+        User(
+            title = 'Miss',
+            first_name = 'Gabriella',
+            middle_name = 'Sasha',
+            last_name = 'Jones',
+            password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
+            school_email = 'gabriella.jones@bgbc.edu.au',
+            personal_email = 'gabbyjonesy@hotmail.com',
+            phone = '0408301554',
+            dob = '2005-04-07',
+            gender = 'female',
+            type = 'student'
         )
     ]
     db.session.add_all(users)
@@ -74,7 +87,7 @@ def seed_db():
         Student(
             homegroup = 'WH05',
             enrollment_date = '2021-01-01',
-            year_level = 10,
+            year_level = 9,
             birth_country = 'Australia',
             user = users[2]
         )
