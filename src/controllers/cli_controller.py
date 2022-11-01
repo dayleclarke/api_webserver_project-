@@ -1,7 +1,8 @@
 from flask import Blueprint
 from init import db, bcrypt
 from datetime import date
-from models.teacher import Teacher
+from models.user import User
+from models.subject_class import SubjectClass
 
 db_commands = Blueprint('db', __name__)
 
@@ -17,36 +18,57 @@ def drop_db():
 
 @db_commands.cli.command('seed')
 def seed_db():
-    teachers = [
-        Teacher(
+    users = [
+        User(
             title = 'Miss',
             first_name = 'Danielle',
             middle_name = 'Jane',
             last_name = 'Clark',
+            password=bcrypt.generate_password_hash('ExamplePassword').decode('utf-8'),
             school_email = 'danielle.clark@bgbc.edu.au',
             personal_email = 'danielle.clark08@gmail.com',
             phone = '0416393531',
-            employment_status = 'permanent full-time',
-            pay_scale = 'B2S1',
+            dob = '1987-12-07',
             gender = 'female',
-            password=bcrypt.generate_password_hash('ExamplePassword').decode('utf-8')
+            type = 'teacher'            
         ),
-        Teacher(
+        User(
             title = 'Mr',
             first_name = 'Damion',
             middle_name = 'George',
             last_name = 'Burns',
+            password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
             school_email = 'damion.burns@bgbc.edu.au',
             personal_email = 'damion.burns7@gmail.com',
             phone = '0405301451',
-            employment_status = 'permanent full-time',
-            pay_scale = 'B2S2',
+            dob = '1985-04-07',
             gender = 'male',
-            password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8')
+            type = 'teacher'
         )
     ]
-
-    db.session.add_all(teachers)
+    db.session.add_all(users)
     db.session.commit()
+    
+    subject_classes = [
+        SubjectClass(
+            class_id = '09EE01-2023',
+            employee_id = 1,
+            room = 'MB2.2',
+            timetable_line = 2,  
+            subject_id = '09EE'
+        ),
+        SubjectClass(
+            class_id = '09EE02-2023',
+            employee_id = 2,
+            room = 'MB2.4',
+            timetable_line = 1,  
+            subject_id = '09EE'
+        )
+    ]
+    
+    db.session.add_all(subject_classes)
+    db.session.commit()
+ 
+    
 
     print('Tables seeded')

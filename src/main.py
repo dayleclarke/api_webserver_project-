@@ -1,7 +1,7 @@
 from flask import Flask
 from init import db, ma, bcrypt, jwt
 from controllers.cli_controller import db_commands
-from controllers.teachers_controller import teachers_bp 
+from controllers.users_controller import users_bp 
 from controllers.auth_controller import auth_bp 
 
 # from controllers.cards_controller import cards_bp # this will import the cards blueprint. 
@@ -18,6 +18,10 @@ def create_app():
     @app.errorhandler(404)
     def not_found(err): # It automatically passes in an error object. 
         return {'error': str(err)}, 404
+    
+    @app.errorhandler(401)
+    def unauthorized(err):
+        return {'error': 'You are not authorized to perform this action'}, 401
 
     
     # create the instances of our components
@@ -29,7 +33,7 @@ def create_app():
     # register the following blueprints:
 
     app.register_blueprint(db_commands)
-    app.register_blueprint(teachers_bp) 
+    app.register_blueprint(users_bp) 
     app.register_blueprint(auth_bp) 
     
 
