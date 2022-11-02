@@ -24,5 +24,5 @@ class UserSchema(ma.Schema):
     student = fields.Nested('StudentSchema', exclude=['user'])
     
     class Meta:
-        fields = ('id', 'title', 'first_name', 'middle_name', 'last_name', 'school_email', 'personal_email', 'phone', 'dob', 'gender', 'type', 'student')
+        fields = ('id', 'title', 'first_name', 'middle_name', 'last_name', 'password', 'school_email', 'personal_email', 'phone', 'dob', 'gender', 'type', 'student')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order. 
