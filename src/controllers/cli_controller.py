@@ -4,6 +4,7 @@ from datetime import date
 from models.user import User
 from models.student import Student
 from models.subject_class import SubjectClass
+from models.enrollments import Enrollment
 
 db_commands = Blueprint('db', __name__)
 
@@ -89,7 +90,7 @@ def seed_db():
             enrollment_date = '2021-01-01',
             year_level = 9,
             birth_country = 'Australia',
-            user = users[2]
+            user = users[3]
         )
     ]
     db.session.add_all(students)
@@ -97,19 +98,58 @@ def seed_db():
     
     subject_classes = [
         SubjectClass(
-            class_id = '09EE01-2023',
+            id = '09EE01-2023',
             employee_id = 1,
             room = 'MB2.2',
             timetable_line = 2,  
             subject_id = '09EE'
         ),
         SubjectClass(
-            class_id = '09EE02-2023',
+            id = '09EE02-2023',
             employee_id = 2,
             room = 'MB2.4',
             timetable_line = 1,  
             subject_id = '09EE'
+        ),
+        SubjectClass(
+            id = '09MAB01-2023',
+            employee_id = 3,
+            room = 'SA1.4',
+            timetable_line = 3,  
+            subject_id = '09MAB'
+        ),
+        SubjectClass(
+            id = '09ENG05-2023',
+            employee_id = 4,
+            room = 'SA4.4',
+            timetable_line = 4,  
+            subject_id = '09ENG'
         )
+    ]    
+    db.session.add_all(subject_classes)
+    db.session.commit()
+
+    enrollments = [
+        Enrollment(
+            date = '01-01-2023',
+            subject_class = subject_classes[0],
+            student = students[0]
+        ),
+        Enrollment(
+            date = '01-01-2023',
+            subject_class = subject_classes[0],
+            student = students[1]
+        ),
+        Enrollment(
+            date = '01-01-2023',
+            subject_class = subject_classes[2],
+            student = students[0]
+        ),
+        Enrollment(
+            date = '01-01-2023',
+            subject_class = subject_classes[2],
+            student = students[1]
+        ),
     ]
     
     db.session.add_all(subject_classes)
