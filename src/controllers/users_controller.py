@@ -47,7 +47,7 @@ def get_all_users():
     return UserSchema(many=True, exclude=['password']).dump(users)
 
 
-@users_bp.route('/<int:id>/')
+@users_bp.route('/<int:id>')
 # This specifies a restful parameter of id that will be an integer. It will only match if the value passed in is an integer. 
 def get_one_user(id):
     # A route to retrieve a single user resource based on their id

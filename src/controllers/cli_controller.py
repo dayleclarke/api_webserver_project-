@@ -5,6 +5,7 @@ from models.user import User
 from models.student import Student
 from models.subject_class import SubjectClass
 from models.enrollments import Enrollment
+from models.subject import Subject
 
 db_commands = Blueprint('db', __name__)
 
@@ -95,7 +96,32 @@ def seed_db():
     ]
     db.session.add_all(students)
     db.session.commit()
-    
+    subjects = [
+        Subject(
+            id = '09EE',
+            name = 'Enterprise Education',
+            year_level = 9,
+            max_students = 28,
+            department = 'Business'
+
+        ),
+        Subject(
+            id = '09MAB',
+            name = 'Maths Beta',
+            year_level = 9,
+            max_students = 25,
+            department = 'Maths'
+        ),
+        Subject(
+            id = '09ENG',
+            name = 'Junior English',
+            year_level = 9,
+            max_students = 28,
+            department = 'English'
+        )
+    ]    
+    db.session.add_all(subjects)
+    db.session.commit()
     subject_classes = [
         SubjectClass(
             id = '09EE01-2023',
