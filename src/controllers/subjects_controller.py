@@ -128,7 +128,7 @@ def create_subject_class(subject_id):
         # Respond to client
         return SubjectClassSchema().dump(subject_class), 201
     else:
-        return {'error': f'Subject not found with id {id}.'}, 404
+        return {'error': f'Subject not found with id {subject_id}.'}, 404
 
 
 # READ Class
@@ -141,17 +141,27 @@ def get_all_classes():
     return SubjectClassSchema(many=True).dump(subject_classes)
 
 
-@subjects_bp.route('/<string:id>/classes') 
-def get_one_subjects_classes(id):
+@subjects_bp.route('/classes/<string:id>') 
+def get_one_class(id):
     # A route to return one instance of a subject based on the subject id. 
-    stmt = db.select(SubjectClass).filter_by(subject_id=id)
-    subject_classes = db.session.scalars(stmt)
+    stmt = db.select(SubjectClass).filter_by(id=id)
+    subject_classes = db.session.scalar(stmt)
     if subject_classes:    
-        return SubjectSchema().dump(subject_classes)
+        return SubjectClassSchema().dump(subject_classes)
     else:
         # This is the error that will be returned if there is no subject with that ID.
         #  This will return a not found 404 error.  
-        return {'error': f'Subject not found with id {id}.'}, 404
+        return {'error': f'Class not found with id {id}.'}, 404
+
+# A route to return one instance of a subject based on the subject id. 
+    # stmt = db.select(Subject).filter_by(id=id)
+    # subject = db.session.scalar(stmt)
+    # if subject:    
+    #     return SubjectSchema().dump(subject)
+    # else:
+    #     # This is the error that will be returned if there is no subject with that ID.
+    #     #  This will return a not found 404 error.  
+    #     return {'error': f'Subject not found with id {id}.'}, 404
 
 # # This specifies a restful parameter of employee_id that will be an integer. It will only match if the value passed in is an integer. 
 # @subjects_bp.route('/<int:id>/')
