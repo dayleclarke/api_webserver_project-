@@ -1,5 +1,6 @@
 from init import db, ma # Imports start at the root folder. 
 from marshmallow import fields
+from models.user import User, UserSchema
 
 class Student(db.Model):
     __tablename__ = 'students'
@@ -19,7 +20,7 @@ class Student(db.Model):
 class StudentSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.
     #  Here we only have to list the fields we want to be jsonified.  We don't want to include a password in the schema even though it's encrypted. 
-    user = fields.Nested('UserSchema', exclude=['student'])
+    user = fields.Nested(UserSchema)
     enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date','subject_class']))
 
     

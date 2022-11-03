@@ -2,6 +2,7 @@
 from flask import Blueprint, request
 from init import db, bcrypt
 from models.student import Student, StudentSchema
+from models.user import User, UserSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Adding a blueprint for users. This will automatically add the prefix users to the
@@ -13,27 +14,45 @@ students_bp = Blueprint('students', __name__, url_prefix='/students') # students
 @students_bp.route('/', methods=['POST'])
 # @jwt_required()
 def create_student():
-    # Create a new Teacher model instance
+    # Create a new student model instance
+    # data = UserSchema().load(request.json)
+   
     data = StudentSchema().load(request.json)
 
+    user =  User(
+        title = data['title'],
+        first_name = data['first_name'],
+        middle_name = data['middle_name'],
+        last_name = data['last_name'],
+        password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
+        school_email = data['school_email'],
+        personal_email = data['personal_email'],
+        phone = data['phone'],
+        dob = data['dob'],
+        gender = data['gender'],
+        type = data['type'] 
+    )
+    # Add and commit card to DB
+    db.session.add(user)
+    db.session.commit()
+    
     student = Student(
         homegroup = data['homegroup'],
         enrollment_date = data['enrollment_date'],
         year_level = data['year_level'],
-        birth_country = data['birth_country'],
-        user_id = data['user_id']
+        birth_country = data['birth_country']
     )
-
     # Add and commit card to DB
     db.session.add(student)
     db.session.commit()
     # Respond to client
+    
     return StudentSchema().dump(student), 201
 
 # READ
 @students_bp.route('/') # because of the url prefix the blueprint will automatically make this /cards/
 #This attaches the route to the blueprint
-def get_all_user():
+def get_all_students():
     # A route to return all instances of the users resource in assending alphabetical order by last_name
     stmt = db.select(Student)
     students = db.session.scalars(stmt)

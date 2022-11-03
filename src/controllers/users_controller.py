@@ -79,16 +79,15 @@ def update_one_user(id):
         user.dob = request.json.get('dob') or user.dob
         user.gender = request.json.get('gender') or user.gender
         user.type = request.json.get('type') or user.type
-
         
         db.session.commit()      
         return UserSchema().dump(user)
     else:
-        return {'error': f'User not found with id {id}'}, 404
+        return {'error': f'User not found with id {id}.'}, 404
 
 # DELETE
 @users_bp.route('/<int:id>/', methods=['DELETE'])
-@jwt_required()
+# @jwt_required()
 def delete_one_user(id):
     # authorize()
     # A route to delete one user resource
@@ -99,7 +98,7 @@ def delete_one_user(id):
     if user:
         db.session.delete(user)
         db.session.commit()
-        return {'message': f'The records for {user.first_name} {user.last_name} were deleted successfully'}
+        return {'message': f'The records for {user.first_name} {user.last_name} were deleted successfully.'}
     # If the employee_id doesn't exist in the database return a not found (404) error
     else:
-        return {'error': f'User not found with id {id}'}, 404
+        return {'error': f'User not found with id {id}.'}, 404
