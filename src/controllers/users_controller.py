@@ -38,20 +38,23 @@ def create_user():
 # READ
 @users_bp.route('/') # because of the url prefix the blueprint will automatically make this /cards/
 #This attaches the route to the blueprint
-def get_all_user():
-    # A route to return all instances of the users resource in assending alphabetical order by last_name
+def get_all_users():
+    # A route to return all instances of the users resource in assending alphabetical order by last_name (select * from users)
+    #Build the query
     stmt = db.select(User).order_by(User.last_name)
+    # Execute the query
     users = db.session.scalars(stmt)
     return UserSchema(many=True, exclude=['password']).dump(users)
 
-# This specifies a restful parameter of employee_id that will be an integer. It will only match if the value passed in is an integer. 
+
 @users_bp.route('/<int:id>/')
+# This specifies a restful parameter of id that will be an integer. It will only match if the value passed in is an integer. 
 def get_one_user(id):
-    # A route to retrieve a single user resource based on their employee_id
+    # A route to retrieve a single user resource based on their id
     stmt = db.select(User).filter_by(id=id)
     user = db.session.scalar(stmt) # change this to scalar singular as this is only one we are retrieving 
-    if user:
-        return UserSchema().dump(user) # remove the many=True because we are only returning a single Card. 
+    if user: 
+        return UserSchema(exclude=['password']).dump(user) # remove the many=True because we are only returning a single Card. 
     else:
         # This is the error that will be returned if there is no employee with that ID.
         #  This will return a not found 404 error.  
@@ -69,7 +72,7 @@ def update_one_user(id):
         user.first_name = request.json.get('first_name') or user.first_name
         user.middle_name = request.json.get('middle_name') or user.middle_name
         user.last_name = request.json.get('last_name') or user.last_name
-        #password?
+        user.password = bcrypt.generate_password_hash(request.json['password']).decode('utf8') or user.password
         user.school_email = request.json.get('school_email') or user.school_email
         user.personal_email =request.json.get('personal_email') or user.personal_email
         user.phone = request.json.get('phone') or user.phone
