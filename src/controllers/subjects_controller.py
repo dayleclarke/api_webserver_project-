@@ -61,7 +61,7 @@ def update_one_subject(id):
     stmt = db.select(Subject).filter_by(id=id)
     subject = db.session.scalar(stmt)
     if subject:
-        subject.id = request.json.get('id') or subject.id # The get method will return none if the key doesn't exist rather than raising an exception. 
+        subject.id = request.json.get('id') or subject.id 
         subject.name = request.json.get('name') or subject.name
         subject.year_level = request.json.get('year_level') or subject.year_level
         subject.max_students = request.json.get('max_students') or subject.max_students

@@ -22,7 +22,7 @@ def auth_register():
     try:
         # Create a new User model instance from the user_info
         user = User(
-            school_email = request.json['school_email'],
+            email = request.json['email'],
             password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
             first_name = request.json.get('first_name'),
             middle_name = request.json.get('middle_name'),
@@ -40,13 +40,13 @@ def auth_register():
 @auth_bp.route('/login/', methods=['POST'])
 def auth_login():
     # Find a user by email address
-    stmt = db.select(User).filter_by(school_email=request.json['school_email'])
+    stmt = db.select(User).filter_by(email=request.json['email'])
     user = db.session.scalar(stmt)
     # If user exists and password is correct
     if user and bcrypt.check_password_hash(user.password, request.json['password']):
         # return UserSchema(exclude=['password']).dump(user)
         token = create_access_token(identity=str(user.employee_id), expires_delta=timedelta(days=1))
-        return {'email': user.school_email, 'token': token}
+        return {'email': user.email, 'token': token}
     else:
         return {'error': 'Invalid email or password'}, 401
     

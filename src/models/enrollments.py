@@ -1,5 +1,6 @@
 from init import db, ma # Imports start at the root folder. 
 from marshmallow import fields
+from datetime import date
 
 class Enrollment(db.Model):
     __tablename__ = 'enrollments'
@@ -19,6 +20,7 @@ class EnrollmentSchema(ma.Schema):
     #  Here we only have to list the fields we want to be jsonified.  We don't want to include a password in the schema even though it's encrypted. 
     subject_class = fields.Nested('SubjectClassSchema')
     student = fields.Nested('StudentSchema')
+    date = fields.Date(load_default=date.today()) 
     
     class Meta:
         fields = ('id', 'date','subject_class', 'student')

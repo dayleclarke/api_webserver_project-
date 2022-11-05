@@ -23,8 +23,7 @@ def create_user():
         middle_name = data['middle_name'],
         last_name = data['last_name'],
         password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
-        school_email = data['school_email'],
-        personal_email = data['personal_email'],
+        email = data['email'],
         phone = data['phone'],
         dob = data['dob'],
         gender = data['gender'],
@@ -74,8 +73,7 @@ def update_one_user(id):
         user.middle_name = request.json.get('middle_name') or user.middle_name
         user.last_name = request.json.get('last_name') or user.last_name
         user.password = bcrypt.generate_password_hash(request.json['password']).decode('utf8') or user.password
-        user.school_email = request.json.get('school_email') or user.school_email
-        user.personal_email =request.json.get('personal_email') or user.personal_email
+        user.email = request.json.get('email') or user.email
         user.phone = request.json.get('phone') or user.phone
         user.dob = request.json.get('dob') or user.dob
         user.gender = request.json.get('gender') or user.gender
