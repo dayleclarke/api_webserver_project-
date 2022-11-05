@@ -1,10 +1,10 @@
 from init import db, ma # Imports start at the root folder. 
-from marshmallow import fields
+from marshmallow import fields, validates
 from marshmallow.validate import Length, OneOf, And, Regexp
+from marshmallow.exceptions import ValidationError
+from datetime import date
 
 VALID_TYPES = ('Employee', 'Caregiver', 'Student', 'Other')
-
-
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -30,12 +30,21 @@ class UserSchema(ma.Schema):
     
     title = fields.String(required = False, load_default=None, validate= Regexp('^[a-zA-Z. &:;]+$', error='Please enter a valid title or honorific, such as Mr. Ms. Dr. or Mx.'))
     first_name = fields.String(required = True, validate=Length(min=1, error='First name must be at least 1 character in length'))
+    middle_name = fields.String(validate=Length(min=1, error='Middle name must be at least 1 character in length')) # Validate a none compulsory field that can contain any characters? 
     last_name = fields.String(required = True, validate=Length(min=1, error='Last name must be at least 1 character in length'))
     password = fields.String(validate= Regexp("""^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$#$^()!%*?&]{8,}$""", error='Password must contain a minimum of eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.'))
     email = fields.String(required = True, validate= Regexp("""^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$""", error="Please provide a valid email address"))
     phone= fields.String(required = True, validate= Regexp('^[0-9 ()+]+$', error="Please provide a valid phone number"))
     dob = fields.Date()
+    gender = fields.String(required = False, load_default=None, validate= Regexp('^[a-zA-Z. &-:;]+$', error='You have endered a character that is not permitted when describing gender such as a number or special character'))
     type = fields.String(required = True, validate=OneOf(VALID_TYPES, error="The user type must be either an 'Employee', 'Student','Caregiver' or 'Other'."))
+
+    @validates('dob') 
+    def validate_dob(self, value): # The value is the dob entered by the user. 
+        #If the date of birth is after today's date than raise a validation error.
+        if value > date.today():
+            raise ValidationError("Date of birth occures after today's date and must be an error.")
+
 
     class Meta:
         fields = ('id', 'title', 'first_name', 'middle_name', 'last_name', 'password', 'email', 'phone', 'dob', 'gender', 'type', 'student')
