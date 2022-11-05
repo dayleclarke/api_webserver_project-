@@ -4,6 +4,7 @@ from init import db, bcrypt
 from models.student import Student, StudentSchema
 from models.user import User, UserSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.exc import IntegrityError
 
 # Adding a blueprint for users. This will automatically add the prefix users to the
 # start of all URL's with this blueprint. 
@@ -14,10 +15,10 @@ students_bp = Blueprint('students', __name__, url_prefix='/students') # students
 @students_bp.route('/', methods=['POST'])
 # @jwt_required()
 def create_student():
-    # Create a new student model instance
-    # data = UserSchema().load(request.json)
-   
-    data = StudentSchema().load(request.json)
+    # Create a new student and user model instance for the new student. 
+    # first create a new instance of the user based on the provided input.
+
+    data = UserSchema().load(request.json)
 
     user =  User(
         title = data['title'],
@@ -32,22 +33,32 @@ def create_student():
         gender = data['gender'],
         type = data['type'] 
     )
-    # Add and commit card to DB
-    db.session.add(user)
-    db.session.commit()
+    # Add and commit the user to the database if there are no issues with the input.
+    try:
+        db.session.add(user)
+        db.session.commit()
     
-    student = Student(
-        homegroup = data['homegroup'],
-        enrollment_date = data['enrollment_date'],
-        year_level = data['year_level'],
-        birth_country = data['birth_country']
-    )
-    # Add and commit card to DB
-    db.session.add(student)
-    db.session.commit()
-    # Respond to client
-    
-    return StudentSchema().dump(student), 201
+        # get the new user's id with the provided school_email address because it is a unique field. 
+        stmt = db.select(User).filter_by(school_email=data['school_email'])
+        user = db.session.scalar(stmt)
+
+        #create a new student instance with the user_id from the user just created. 
+        student = Student(
+            user_id = user.id,
+            homegroup = data['homegroup'],
+            enrollment_date = data['enrollment_date'],
+            year_level = data['year_level'],
+            birth_country = data['birth_country']
+        )
+        # Add and commit the new student to the DB
+        db.session.add(student)
+        db.session.commit()
+        # Respond to client
+        
+        return StudentSchema().dump(student), 201
+    except IntegrityError:
+        return {'message': 'School email address already exists'}, 409
+
 
 # READ
 @students_bp.route('/') # because of the url prefix the blueprint will automatically make this /cards/

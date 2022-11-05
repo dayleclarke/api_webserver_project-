@@ -1,5 +1,10 @@
 from init import db, ma # Imports start at the root folder. 
 from marshmallow import fields
+from marshmallow.validate import Length, OneOf
+
+VALID_TYPES = ('Employee', 'Caregiver', 'Student')
+
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -22,7 +27,10 @@ class User(db.Model):
 
 class UserSchema(ma.Schema):
     student = fields.Nested('StudentSchema', exclude=['user'])
-    
+    # Marshmallow has a more extensive and useful validation system than SQLAlchemy so the following validation requirments have been added here to the schema. 
+    first_name = fields.String(required = True, validate=Length(min=1, error='First name must be at least 1 character in length'))
+    type = fields.String(required = True, validate=OneOf(VALID_TYPES, error="The user type must be either an 'Employee', 'Student' or 'Caregiver'."))
+
     class Meta:
         fields = ('id', 'title', 'first_name', 'middle_name', 'last_name', 'password', 'school_email', 'personal_email', 'phone', 'dob', 'gender', 'type', 'student')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order. 

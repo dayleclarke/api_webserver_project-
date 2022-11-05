@@ -20,6 +20,7 @@ class SubjectSchema(ma.Schema):
     # enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'student'])) 
     subject_classes = fields.List(fields.Nested('SubjectClassSchema', exclude=['subject']))
 
+    
     class Meta:
         fields = ('id', 'name', 'year_level', 'max_students', 'department', 'subject_classes')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order. 

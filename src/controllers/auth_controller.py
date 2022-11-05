@@ -1,4 +1,4 @@
-# Auth will make use of the users model but indirectly. 
+# Auth will make use of the teachers model but indirectly. 
 from flask import Blueprint, request, abort
 from init import db, bcrypt
 from datetime import timedelta
@@ -51,9 +51,9 @@ def auth_login():
         return {'error': 'Invalid email or password'}, 401
     
 # I can import this into other modules and call it whenever it is needed. 
-def authorize():
-    employee_id = get_jwt_identity()
-    stmt = db.select(User).filter_by(employee_id=employee_id)
-    user = db.session.scalar(stmt)
-    # if not user.is_admin:
-    #     abort(401)
+# def authorize():
+#     employee_id = get_jwt_identity()
+#     stmt = db.select(User).filter_by(employee_id=employee_id)
+#     user = db.session.scalar(stmt)
+#     if not user.is_admin:
+#         abort(401)

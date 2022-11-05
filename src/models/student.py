@@ -20,10 +20,12 @@ class Student(db.Model):
 class StudentSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.
     #  Here we only have to list the fields we want to be jsonified.  We don't want to include a password in the schema even though it's encrypted. 
-    user = fields.Nested(UserSchema)
-    enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date','subject_class']))
+    user = fields.Nested(UserSchema, exclude= ['password'])
+    enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
 
     
     class Meta:
         fields = ('user', 'homegroup', 'enrollment_date', 'year_level', 'birth_country', 'enrollments')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
+
+        # 'enrollments'

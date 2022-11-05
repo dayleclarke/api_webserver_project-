@@ -14,6 +14,7 @@ users_bp = Blueprint('users', __name__, url_prefix='/users') # users is a resour
 # @jwt_required()
 def create_user():
     # Create a new Teacher model instance
+    # load applies the validation rules set on the schema. 
     data = UserSchema().load(request.json)
 
     user = User(

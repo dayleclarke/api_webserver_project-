@@ -5,10 +5,8 @@ from controllers.users_controller import users_bp
 from controllers.auth_controller import auth_bp 
 from controllers.students_controller import students_bp 
 from controllers.subjects_controller import subjects_bp 
-
-# from controllers.cards_controller import cards_bp # this will import the cards blueprint. 
+from marshmallow.exceptions import ValidationError
 import os
-
 
 def create_app(): 
     app = Flask (__name__)
@@ -16,14 +14,27 @@ def create_app():
     app.config['JSON_SORT_KEYS']= False
     app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 
-    # This will change the error message returned with a 404 status code. It will catch any 404 that happens and return the error message in JSON instead of HTML. 
-    @app.errorhandler(404)
-    def not_found(err): # It automatically passes in an error object. 
-        return {'error': str(err)}, 404
+    # Each of the following errorhandler functions will change the error message returned with the specified status code. It will catch the specific error that happens (anywhere in the app) and return the error message in JSON instead of HTML. This provides consistency across the app's responses.  
+
+    @app.errorhandler(400)
+    def bad_request(err): # It automatically passes in an error object. 
+        return {'error': str(err)}, 400
     
     @app.errorhandler(401)
     def unauthorized(err):
         return {'error': 'You are not authorized to perform this action'}, 401
+    
+    @app.errorhandler(404)
+    def not_found(err): 
+        return {'error': str(err)}, 404
+    
+    @app.errorhandler(KeyError)
+    def key_error(err):
+        return {'error': f'The field {err} is required.'}, 400
+    
+    @app.errorhandler(ValidationError)
+    def validation_error(err):
+        return {'error': err.messages}, 400
 
     
     # create the instances of our components
