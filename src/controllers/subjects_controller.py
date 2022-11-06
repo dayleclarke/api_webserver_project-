@@ -112,14 +112,16 @@ def delete_one_subject(id):
 def create_subject_class(subject_id):
     # Create a new SubjectClass model instance
     # Select the subject to add a class to based on the incoming subject_id
+    data = SubjectClassSchema().load(request.json)
+    
     stmt = db.select(Subject).filter_by(id=subject_id)
     subject = db.session.scalar(stmt)
     if subject:
         subject_class = SubjectClass(
-            id = request.json['id'],
-            employee_id = request.json['employee_id'],
-            room = request.json['room'],
-            timetable_line = request.json['timetable_line'],
+            id = data['id'],
+            employee_id = data['employee_id'],
+            room = data['room'],
+            timetable_line = data['timetable_line'],
             subject = subject
         )
         # Add and commit card to DB

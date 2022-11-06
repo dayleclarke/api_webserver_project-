@@ -14,12 +14,12 @@ class User(db.Model):
     first_name = db.Column(db.String(50), nullable= False)
     middle_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50), nullable= False)
-    password = db.Column(db.String)
+    password = db.Column(db.String, nullable= False)
     email = db.Column(db.String(100), unique=True, nullable= False)
     phone = db.Column(db.String(20), nullable= False)
     dob = db.Column(db.Date) 
     gender = db.Column(db.String(50))
-    type = db.Column(db.String(50), nullable= False)
+    type = db.Column(db.String(9), nullable= False)
     
     student = db.relationship('Student', back_populates='user', cascade='all, delete', uselist=False) 
 
@@ -32,7 +32,7 @@ class UserSchema(ma.Schema):
     first_name = fields.String(required = True, validate=Length(min=1, error='First name must be at least 1 character in length'))
     middle_name = fields.String(validate=Length(min=1, error='Middle name must be at least 1 character in length')) # Validate a none compulsory field that can contain any characters? 
     last_name = fields.String(required = True, validate=Length(min=1, error='Last name must be at least 1 character in length'))
-    password = fields.String(validate= Regexp("""^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$#$^()!%*?&]{8,}$""", error='Password must contain a minimum of eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.'))
+    password = fields.String(load_only=True, validate= Regexp("""^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$#$^()!%*?&]{8,}$""", error='Password must contain a minimum of eight characters, at least one uppercase letter, one lowercase letter, one number and one special character.'))
     email = fields.String(required = True, validate= Regexp("""^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$""", error="Please provide a valid email address"))
     phone= fields.String(required = True, validate= Regexp('^[0-9 ()+]+$', error="Please provide a valid phone number"))
     dob = fields.Date()

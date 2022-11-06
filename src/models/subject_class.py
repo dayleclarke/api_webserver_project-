@@ -1,5 +1,6 @@
 from init import db, ma # Imports start at the root folder. 
 from marshmallow import fields
+from marshmallow.validate import Length, OneOf, And, Regexp, Range
 
 class SubjectClass(db.Model):
     __tablename__ = 'subject_classes'
@@ -18,7 +19,18 @@ class SubjectClassSchema(ma.Schema):
 
     subject = fields.Nested('SubjectSchema', exclude=['subject_classes'])
     
+    # Validations
+    id = fields.String(required=True, validate=And(
+        Length(min=6, error='Class id must be at least 6 characters long.'),
+        Regexp('^[a-zA-Z0-9-]+$', error='Only letters, numbers and hyphens are allowed in a class id.')
+    ))
+    room = fields.String(required=True, validate=And(
+        Length(min=4, max=7, error='Room must be at least 4 and up to 7 characters long'),
+        Regexp('^[a-zA-Z0-9.]+$', error='Only letters, numbers and periods (dots) are allowed')
+    ))
+    timetable_line = fields.Integer(validate=Range(min=1, max=6))
+    
     class Meta:
-        fields = ('id', 'employee_id', 'room', 'timetable', 'subject')
+        fields = ('id', 'employee_id', 'room', 'timetable_line', 'subject')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order. 
 

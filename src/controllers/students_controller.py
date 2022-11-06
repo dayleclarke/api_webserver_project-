@@ -11,10 +11,39 @@ from sqlalchemy.exc import IntegrityError
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
 
 #CREATE
+# Add one student with an exsiting user account:
+@students_bp.route('/<int:user_id>/', methods=['POST'])
+# @jwt_required()
+def create_student(user_id):
+    data = StudentSchema().load(request.json)
+    # Create a new SubjectClass model instance
+    # Select the subject to add a class to based on the incoming subject_id
+    stmt = db.select(User).filter_by(id=user_id)
+    user = db.session.scalar(stmt)
+    if user:
+        student = Student(
+            user_id = user.id,
+            homegroup = data['homegroup'],
+            enrollment_date = data['enrollment_date'],
+            year_level = data['year_level'],
+            birth_country = data['birth_country']
+        )
+        
+        # Add and commit card to DB
+        db.session.add(student)
+        db.session.commit()
+        # Respond to client
+        return StudentSchema().dump(student), 201
+    else:
+        return {'error': f'User not found with id {user_id}.'}, 404
+
+
+
+
 # A route to create one new student resource 
 @students_bp.route('/', methods=['POST'])
 # @jwt_required()
-def create_student():
+def create_user_and_student():
     # Create a new student and user model instance for the new student. 
     # first create a new instance of the user based on the provided input.
 
@@ -42,6 +71,7 @@ def create_student():
         user = db.session.scalar(stmt)
 
         #create a new student instance with the user_id from the user just created. 
+        data = StudentSchema().load(request.json)
         student = Student(
             user_id = user.id,
             homegroup = data['homegroup'],
