@@ -4,7 +4,7 @@ from datetime import date
 from models.user import User
 from models.student import Student
 from models.subject_class import SubjectClass
-from models.enrollments import Enrollment
+from models.enrollment import Enrollment
 from models.subject import Subject
 
 db_commands = Blueprint('db', __name__)
@@ -153,22 +153,22 @@ def seed_db():
 
     enrollments = [
         Enrollment(
-            date = '01-01-2023',
+            date = '2023-01-01',
             subject_class = subject_classes[0],
             student = students[0]
         ),
         Enrollment(
-            date = '01-01-2023',
+            date = '2023-01-01',
             subject_class = subject_classes[0],
             student = students[1]
         ),
         Enrollment(
-            date = '01-01-2023',
+            date = '2023-01-01',
             subject_class = subject_classes[2],
             student = students[0]
         ),
         Enrollment(
-            date = '01-01-2023',
+            date = '2023-01-01',
             subject_class = subject_classes[2],
             student = students[1]
         ),

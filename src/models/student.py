@@ -23,7 +23,7 @@ class Student(db.Model):
 class StudentSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.    
     user = fields.Nested(UserSchema, exclude= ['password'])
-    enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
+    # enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
     
     # Validations
     
@@ -46,6 +46,6 @@ class StudentSchema(ma.Schema):
 
     
     class Meta:
-        fields = ('user', 'homegroup', 'enrollment_date', 'year_level', 'birth_country', 'enrollments')
+        fields = ('user', 'homegroup', 'enrollment_date', 'year_level', 'birth_country')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
 

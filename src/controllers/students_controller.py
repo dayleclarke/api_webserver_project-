@@ -50,16 +50,16 @@ def create_user_and_student():
     data = UserSchema().load(request.json)
 
     user =  User(
-        title = data['title'],
+        title = data['user.title'],
         first_name = data['first_name'],
-        middle_name = data['middle_name'],
-        last_name = data['last_name'],
-        password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
-        email = data['email'],
-        phone = data['phone'],
-        dob = data['dob'],
-        gender = data['gender'],
-        type = data['type'] 
+        middle_name = data['user.middle_name'],
+        last_name = data['user.last_name'],
+        password = bcrypt.generate_password_hash(request.json['user.password']).decode('utf8'),
+        email = data['user.email'],
+        phone = data['user.phone'],
+        dob = data['user.dob'],
+        gender = data['user.gender'],
+        type = data['user.type'] 
     )
     # Add and commit the user to the database if there are no issues with the input.
     try:
@@ -74,10 +74,10 @@ def create_user_and_student():
         data = StudentSchema().load(request.json)
         student = Student(
             user_id = user.id,
-            homegroup = data['homegroup'],
-            enrollment_date = data['enrollment_date'],
-            year_level = data['year_level'],
-            birth_country = data['birth_country']
+            homegroup = data['student.homegroup'],
+            enrollment_date = data['student.enrollment_date'],
+            year_level = data['student.year_level'],
+            birth_country = data['student.birth_country']
         )
         # Add and commit the new student to the DB
         db.session.add(student)
@@ -153,3 +153,48 @@ def delete_one_user(id):
     # If the employee_id doesn't exist in the database return a not found (404) error
     else:
         return {'error': f'Student not found with id {id}'}, 404
+
+
+
+
+# {   "title": "Ms",
+#     "first_name": "Rachael",
+#     "middle_name": "Anne",
+#     "last_name": "Cook",
+#     "password": "hamAnd335*",
+#     "email": "rachael.cook42@bgbc.edu.au",
+#     "phone": "0414563531",
+#     "dob": "1980-09-02",
+#     "gender": "female",
+#     "type": "Student",
+#     "student": {
+#         "homegroup": "WH01",
+#         "enrollment_date": "2020-01-01",
+#         "year_level": 9,
+#         "birth_country": "Australia"
+#         }
+#     }
+
+
+#OR
+
+
+# {   "user":{
+#         "title": "Ms",
+#         "first_name": "Rachael",
+#         "middle_name": "Anne",
+#         "last_name": "Cook",
+#         "password": "hamAnd335*",
+#         "email": "rachael.cook42@bgbc.edu.au",
+#         "phone": "0414563531",
+#         "dob": "1980-09-02",
+#         "gender": "female",
+#         "type": "Student"
+#     },
+#     "student": {
+#         "homegroup": "WH01",
+#         "enrollment_date": "2020-01-01",
+#         "year_level": 9,
+#         "birth_country": "Australia"
+#         }
+#     }
