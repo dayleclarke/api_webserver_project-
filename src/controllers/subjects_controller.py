@@ -177,3 +177,47 @@ def get_one_class(id):
 #         # This is the error that will be returned if there is no employee with that ID.
 #         #  This will return a not found 404 error.  
 #         return {'error': f'User not found with id {id}.'}, 404
+
+#CREATE Subject
+# A route to create one new subject_class
+@subjects_bp.route('/', methods=['POST'])
+# @jwt_required()
+def create_subject():
+    # Create a new Subject model instance
+    data = SubjectSchema().load(request.json)
+
+    subject = Subject(
+        id = data['id'],
+        name = data['name'],
+        year_level = data['year_level'],
+        max_students = data['max_students'],
+        department = data['department']
+    )
+    # Add and commit card to DB
+    db.session.add(subject)
+    db.session.commit()
+    # Respond to client
+    return SubjectSchema().dump(subject), 201
+
+# READ Subject
+@subjects_bp.route('/') # because of the url prefix the blueprint will automatically make this /cards/
+#This attaches the route to the blueprint
+def get_all_subjects():
+    # A route to return all instances of the subjects resource in assending order by subject id (select * from subjects)
+    stmt = db.select(Subject).order_by(Subject.id)
+    subjects = db.session.scalars(stmt)
+    return SubjectSchema(many=True).dump(subjects)
+
+
+@subjects_bp.route('/<string:id>/') # because of the url prefix the blueprint will automatically make this /cards/
+#This attaches the route to the blueprint
+def get_one_subject(id):
+    # A route to return one instance of a subject based on the subject id. 
+    stmt = db.select(Subject).filter_by(id=id)
+    subject = db.session.scalar(stmt)
+    if subject:    
+        return SubjectSchema().dump(subject)
+    else:
+        # This is the error that will be returned if there is no subject with that ID.
+        #  This will return a not found 404 error.  
+        return {'error': f'Subject not found with id {id}.'}, 404

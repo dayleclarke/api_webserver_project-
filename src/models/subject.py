@@ -24,7 +24,7 @@ class SubjectSchema(ma.Schema):
     # validation
 
     id = fields.String(required=True, validate=And(
-        Length(min=4, error='id must be at least 4 characters long'),
+        Length(min=4, error='Subject ID must be at least 4 characters long'),
         Regexp('^[a-zA-Z0-9 ]+$', error='Only letters, numbers and spaces are allowed')
     ))
     
