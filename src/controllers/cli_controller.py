@@ -6,6 +6,7 @@ from models.student import Student
 from models.subject_class import SubjectClass
 from models.enrollment import Enrollment
 from models.subject import Subject
+from models.employee import Employee
 
 db_commands = Blueprint('db', __name__)
 
@@ -32,7 +33,7 @@ def seed_db():
             phone = '0416393531',
             dob = '1987-12-07',
             gender = 'female',
-            type = 'teacher'            
+            type = 'Teacher'            
         ),
         User(
             title = 'Mr',
@@ -44,7 +45,7 @@ def seed_db():
             phone = '0405301451',
             dob = '1985-04-07',
             gender = 'male',
-            type = 'teacher'
+            type = 'Teacher'
         ),
         User(
             title = 'Miss',
@@ -56,7 +57,7 @@ def seed_db():
             phone = '0405301444',
             dob = '2004-04-07',
             gender = 'female',
-            type = 'student'
+            type = 'Student'
         ),
         User(
             title = 'Miss',
@@ -68,7 +69,7 @@ def seed_db():
             phone = '0408301554',
             dob = '2005-04-07',
             gender = 'female',
-            type = 'student'
+            type = 'Student'
         )
     ]
     db.session.add_all(users)
@@ -88,6 +89,25 @@ def seed_db():
             year_level = 9,
             birth_country = 'Australia',
             user = users[3]
+        )
+    ]
+    db.session.add_all(students)
+    db.session.commit()
+    
+    employees = [        
+        Employee(
+            hired_date = '2019-01-01',
+            job_title = 'Teacher',
+            department = 'Business',
+            is_admin = False,
+            user = users[0]
+        ),
+        Employee(
+            hired_date = '2010-01-01',
+            job_title = 'Teacher',
+            department = 'Maths',
+            is_admin = False,
+            user = users[1]
         )
     ]
     db.session.add_all(students)

@@ -21,6 +21,7 @@ class User(db.Model):
     gender = db.Column(db.String(50))
     type = db.Column(db.String(9), nullable= False)
     
+    employee = db.relationship('Employee', back_populates='user', cascade='all, delete', uselist=False) 
     student = db.relationship('Student', back_populates='user', cascade='all, delete', uselist=False) 
 
 # Add any defaults in both places
@@ -44,6 +45,14 @@ class UserSchema(ma.Schema):
         #If the date of birth is after today's date than raise a validation error.
         if value > date.today():
             raise ValidationError("Date of birth occures after today's date and must be an error.")
+
+    # def more_info()
+    #     if type == "student":
+    #         # return self.student
+    #         # StudentSchema().find(user_id== self.id)
+    #     else if type == "teacher":
+            # TeacherSchema().find(user_id == self.id)
+            # return self.teacher
 
 
     class Meta:

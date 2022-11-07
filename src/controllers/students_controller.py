@@ -1,4 +1,4 @@
-# This module contains the CRUD operations for the users model.
+# This module contains the CRUD operations for the students model.
 from flask import Blueprint, request
 from init import db, bcrypt
 from models.student import Student, StudentSchema
@@ -10,35 +10,32 @@ from sqlalchemy.exc import IntegrityError
 # start of all URL's with this blueprint. 
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
 
-#CREATE
-# Add one student with an exsiting user account:
-@students_bp.route('/<int:user_id>/', methods=['POST'])
-# @jwt_required()
-def create_student(user_id):
-    data = StudentSchema().load(request.json)
-    # Create a new SubjectClass model instance
-    # Select the subject to add a class to based on the incoming subject_id
-    stmt = db.select(User).filter_by(id=user_id)
-    user = db.session.scalar(stmt)
-    if user:
-        student = Student(
-            user_id = user.id,
-            homegroup = data['homegroup'],
-            enrollment_date = data['enrollment_date'],
-            year_level = data['year_level'],
-            birth_country = data['birth_country']
-        )
+# #CREATE
+# # Add one student with an exsiting user account:
+# @students_bp.route('/<int:user_id>/', methods=['POST'])
+# # @jwt_required()
+# def create_student(user_id):
+#     data = StudentSchema().load(request.json)
+#     # Create a new SubjectClass model instance
+#     # Select the subject to add a class to based on the incoming subject_id
+#     stmt = db.select(User).filter_by(id=user_id)
+#     user = db.session.scalar(stmt)
+#     if user:
+#         student = Student(
+#             user_id = user.id,
+#             homegroup = data['homegroup'],
+#             enrollment_date = data['enrollment_date'],
+#             year_level = data['year_level'],
+#             birth_country = data['birth_country']
+#         )
         
-        # Add and commit card to DB
-        db.session.add(student)
-        db.session.commit()
-        # Respond to client
-        return StudentSchema().dump(student), 201
-    else:
-        return {'error': f'User not found with id {user_id}.'}, 404
-
-
-
+#         # Add and commit card to DB
+#         db.session.add(student)
+#         db.session.commit()
+#         # Respond to client
+#         return StudentSchema().dump(student), 201
+#     else:
+#         return {'error': f'User not found with id {user_id}.'}, 404
 
 # A route to create one new student resource 
 @students_bp.route('/', methods=['POST'])
@@ -48,45 +45,57 @@ def create_user_and_student():
     # first create a new instance of the user based on the provided input.
 
     data = UserSchema().load(request.json)
-
     user =  User(
-        title = data['user.title'],
+        title = data['title'],
         first_name = data['first_name'],
-        middle_name = data['user.middle_name'],
-        last_name = data['user.last_name'],
-        password = bcrypt.generate_password_hash(request.json['user.password']).decode('utf8'),
-        email = data['user.email'],
-        phone = data['user.phone'],
-        dob = data['user.dob'],
-        gender = data['user.gender'],
-        type = data['user.type'] 
+        middle_name = data['middle_name'],
+        last_name = data['last_name'],
+        password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
+        email = data['email'],
+        phone = data['phone'],
+        dob = data['dob'],
+        gender = data['gender'],
+        type = data['type'] 
     )
-    # Add and commit the user to the database if there are no issues with the input.
-    try:
-        db.session.add(user)
-        db.session.commit()
-    
-        # get the new user's id with the provided email address because it is a unique field. 
-        stmt = db.select(User).filter_by(email=data['email'])
-        user = db.session.scalar(stmt)
+    db.session.add(user)
+    db.session.commit()
 
-        #create a new student instance with the user_id from the user just created. 
-        data = StudentSchema().load(request.json)
-        student = Student(
-            user_id = user.id,
-            homegroup = data['student.homegroup'],
-            enrollment_date = data['student.enrollment_date'],
-            year_level = data['student.year_level'],
-            birth_country = data['student.birth_country']
-        )
-        # Add and commit the new student to the DB
-        db.session.add(student)
-        db.session.commit()
-        # Respond to client
+    student = Student(
+        user_id = user.id,
+        homegroup = data['student']['homegroup'],
+        enrollment_date = data['student']['enrollment_date'],
+        year_level = data['student']['year_level'],
+        birth_country = data['student']['birth_country']
+    )
+    db.session.add(student)
+    db.session.commit()
+    return StudentSchema().dump(student), 201
+    # return UserSchema().dump(user), 201
+
+    # # Add and commit the user to the database if there are no issues with the input.
+    # try:
+    
+    #     # get the new user's id with the provided email address because it is a unique field. 
+    #     stmt = db.select(User).filter_by(email=data['email'])
+    #     user = db.session.scalar(stmt)
+
+    #     #create a new student instance with the user_id from the user just created. 
+    #     data = StudentSchema().load(request.json)
+    #     student = Student(
+    #         user_id = user.id,
+    #         homegroup = data['student.homegroup'],
+    #         enrollment_date = data['student.enrollment_date'],
+    #         year_level = data['student.year_level'],
+    #         birth_country = data['student.birth_country']
+    #     )
+    #     # Add and commit the new student to the DB
+    #     db.session.add(student)
+    #     db.session.commit()
+    #     # Respond to client
         
-        return StudentSchema().dump(student), 201
-    except IntegrityError:
-        return {'message': 'School email address already exists'}, 409
+    #     return StudentSchema().dump(student), 201
+    # except IntegrityError:
+    #     return {'message': 'School email address already exists'}, 409
 
 
 # READ
@@ -156,13 +165,12 @@ def delete_one_user(id):
 
 
 
-
-# {   "title": "Ms",
+# {    "title": "Ms",
 #     "first_name": "Rachael",
 #     "middle_name": "Anne",
 #     "last_name": "Cook",
 #     "password": "hamAnd335*",
-#     "email": "rachael.cook42@bgbc.edu.au",
+#     "email": "test.coggfg4ttt@bgbc.edu.au",
 #     "phone": "0414563531",
 #     "dob": "1980-09-02",
 #     "gender": "female",
@@ -173,28 +181,4 @@ def delete_one_user(id):
 #         "year_level": 9,
 #         "birth_country": "Australia"
 #         }
-#     }
-
-
-#OR
-
-
-# {   "user":{
-#         "title": "Ms",
-#         "first_name": "Rachael",
-#         "middle_name": "Anne",
-#         "last_name": "Cook",
-#         "password": "hamAnd335*",
-#         "email": "rachael.cook42@bgbc.edu.au",
-#         "phone": "0414563531",
-#         "dob": "1980-09-02",
-#         "gender": "female",
-#         "type": "Student"
-#     },
-#     "student": {
-#         "homegroup": "WH01",
-#         "enrollment_date": "2020-01-01",
-#         "year_level": 9,
-#         "birth_country": "Australia"
-#         }
-#     }
+# }
