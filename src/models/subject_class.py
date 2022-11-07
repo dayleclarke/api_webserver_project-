@@ -16,7 +16,6 @@ class SubjectClass(db.Model):
   
 
 class SubjectClassSchema(ma.Schema):
-
     subject = fields.Nested('SubjectSchema', exclude=['subject_classes'])
     enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'student_id', 'student']))
     

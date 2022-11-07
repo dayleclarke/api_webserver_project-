@@ -20,10 +20,24 @@ class Employee(db.Model):
 
 class EmployeeSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.    
-    user = fields.Nested(UserSchema, exclude= ['password'])
+    user = fields.Nested(UserSchema, exclude= ['password', 'student'])
     # enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
     
     # Validations
+    hired_date = fields.Date()
+    job_title = fields.String(required=True, validate=And(
+        Length(min=5, error='Job title must be at least 5 characters long'),
+        Regexp('^[a-zA-Z ]+$', error='Only letters, and spaces are allowed in a job title.')
+    ))
+    department = fields.String(required=True, validate=And(
+        Length(min=5, error='Department must be at least 5 characters long'),
+        Regexp('^[a-zA-Z ]+$', error='Only letters, and spaces are allowed in department names.')
+    ))
+    @validates('hired_date') 
+    def validate_hired_date(self, value): # The value is the hired date entered by the user. 
+        #If the enrollment date is after today's date than raise a validation error.
+        if value > date.today():
+            raise ValidationError("Hired date occures after today's date and must be an error.")
 
     
     class Meta:
