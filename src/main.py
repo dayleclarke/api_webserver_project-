@@ -7,6 +7,7 @@ from controllers.students_controller import students_bp
 from controllers.employees_controller import employees_bp  
 from controllers.subjects_controller import subjects_bp 
 from controllers.enrollments_controller import enrollments_bp 
+from controllers.addresses_controller import addresses_bp 
 from marshmallow.exceptions import ValidationError
 import os
 
@@ -54,6 +55,7 @@ def create_app():
     app.register_blueprint(subjects_bp) 
     app.register_blueprint(enrollments_bp)
     app.register_blueprint(employees_bp)
+    app.register_blueprint(addresses_bp)
     
 
 

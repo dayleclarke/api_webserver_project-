@@ -101,3 +101,5 @@ def delete_one_user(id):
     # If the employee_id doesn't exist in the database return a not found (404) error
     else:
         return {'error': f'User not found with id {id}.'}, 404
+
+
