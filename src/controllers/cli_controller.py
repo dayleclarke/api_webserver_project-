@@ -7,6 +7,7 @@ from models.subject_class import SubjectClass
 from models.enrollment import Enrollment
 from models.subject import Subject
 from models.employee import Employee
+from models.address import Address
 
 db_commands = Blueprint('db', __name__)
 
@@ -22,6 +23,30 @@ def drop_db():
 
 @db_commands.cli.command('seed')
 def seed_db():
+    addresses = [
+        Address(
+            complex_number = 2,
+            street_number = 20,
+            street_name = 'Rose Street',
+            suburb = 'Toowong',
+            postcode = 4066
+            ), 
+        Address(
+            complex_number = 12,
+            street_number = 24,
+            street_name = 'Sand Street',
+            suburb = 'Milton',
+            postcode = 4066
+            ),
+        Address(
+            street_number = 62,
+            street_name = 'York Street',
+            suburb = 'Nundah',
+            postcode = 4012
+            )  
+    ]
+    db.session.add_all(addresses)
+    db.session.commit()
     users = [
         User(
             title = 'Miss',
@@ -31,6 +56,7 @@ def seed_db():
             password=bcrypt.generate_password_hash('ExamplePassword').decode('utf-8'),
             email = 'danielle.clark@bgbc.edu.au',
             phone = '0416393531',
+            address = addresses[0],
             dob = '1987-12-07',
             gender = 'female',
             type = 'Teacher'            
@@ -43,6 +69,7 @@ def seed_db():
             password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
             email = 'damion.burns@bgbc.edu.au',
             phone = '0405301451',
+            address = addresses[1],
             dob = '1985-04-07',
             gender = 'male',
             type = 'Teacher'
@@ -55,6 +82,7 @@ def seed_db():
             password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
             email = 'Isabelle.Smith@bgbc.edu.au',
             phone = '0405301444',
+            address = addresses[2],
             dob = '2004-04-07',
             gender = 'female',
             type = 'Student'
@@ -141,28 +169,28 @@ def seed_db():
     subject_classes = [
         SubjectClass(
             id = '09EE01-2023',
-            employee_id = 1,
+            employee = employees[0],
             room = 'MB2.2',
             timetable_line = 2,  
             subject_id = '09EE'
         ),
         SubjectClass(
             id = '09EE02-2023',
-            employee_id = 2,
+            employee = employees[0],
             room = 'MB2.4',
             timetable_line = 1,  
             subject_id = '09EE'
         ),
         SubjectClass(
             id = '09MAB01-2023',
-            employee_id = 3,
+            employee = employees[1],
             room = 'SA1.4',
             timetable_line = 3,  
             subject_id = '09MAB'
         ),
         SubjectClass(
             id = '09ENG05-2023',
-            employee_id = 4,
+            employee = employees[1],
             room = 'SA4.4',
             timetable_line = 4,  
             subject_id = '09ENG'
@@ -194,7 +222,7 @@ def seed_db():
         ),
     ]
     
-    db.session.add_all(subject_classes)
+    db.session.add_all(enrollments)
     db.session.commit()
  
     

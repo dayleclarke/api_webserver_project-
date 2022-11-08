@@ -26,18 +26,22 @@ class User(db.Model):
     gender = db.Column(db.String(50))
     type = db.Column(db.String(9), nullable= False)
     # Establish a foreign key to link the user to their address in the addresses table. This represents the one-to-many relationship. Each user has only one address but each address can belong to multiple users. 
-    address_id = db.Column(db.Integer, db.ForeighKey('addresses.id')) # Adds a foreign key address_id into users. This links to the id (which is the primary key) of the addresses model. This is one side of the relationship. 
+    address_id = db.Column(db.Integer, db.ForeignKey('addresses.id')) # Adds a foreign key address_id into users. This links to the id (which is the primary key) of the addresses model. This is one side of the relationship. 
+    address = db.relationship('Address', back_populates='user')
 
     
     # Establish a one-to-one relationship between user and employee. One user can have zero to one employee record (not all users are employees) and each employee will have exactly one entry in the user’s table to store their personal information (each employee must also have information about them stored in the users table).
     #This establishes a relationship between the user and the employee table. The user is the parent table and employee is the child table. 
      
-    employee = db.relationship('Employee', cascade='all, delete', uselist=False) # Cascade = 'all, delete' means that if a user is deleted their related resource in the employee table will also be deleted. 
+    employee = db.relationship('Employee', back_populates='user', cascade='all, delete', uselist=False) # Cascade = 'all, delete' means that if a user is deleted their related resource in the employee table will also be deleted. If one side of the relationship is deleted then all the other records in the related table are also deleted. 
 
     student = db.relationship('Student', cascade='all, delete', uselist=False) 
 
 # Add any defaults in both places
 class UserSchema(ma.Schema):
+    # To allow a nested address object.  This tells marshmallow what schema it needs to use to process that attribute. An address object cannot be JSON serialized directly. We need to tell it what schema to use to convert the object into a permitted object.   When it needs to process address it should process it as a nested field using the Address Schema.   
+    address = fields.Nested('AddressSchema')
+    
     student = fields.Nested('StudentSchema', exclude=['user'])
     employee = fields.Nested('EmployeeSchema', exclude=['user'])
     # Marshmallow has a more extensive and useful validation system than SQLAlchemy so the following validation requirments have been added here to the schema. 
@@ -71,6 +75,6 @@ class UserSchema(ma.Schema):
 
 
     class Meta:
-        fields = ('id', 'title', 'first_name', 'middle_name', 'last_name', 'password', 'email', 'phone', 'dob', 'gender', 'type', 'student', 'employee')
+        fields = ('id', 'title', 'first_name', 'middle_name', 'last_name', 'password', 'email', 'phone', 'dob', 'gender', 'type', 'student', 'employee', 'address')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order. 
     

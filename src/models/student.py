@@ -22,7 +22,7 @@ class Student(db.Model):
 
 class StudentSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.    
-    user = fields.Nested(UserSchema, exclude= ['password'])
+    user = fields.Nested(UserSchema, exclude= ['password', 'employee'])
     # enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
     
     # Validations

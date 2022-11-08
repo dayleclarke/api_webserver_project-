@@ -17,12 +17,14 @@ class Employee(db.Model):
     
     user = db.relationship('User', back_populates='employee')
 
+    subject_classes = db.relationship('SubjectClass', back_populates='employee', cascade='all, delete') 
+
 
 class EmployeeSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.    
     user = fields.Nested(UserSchema, exclude= ['password', 'student'])
     # enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
-    
+    subject_classes = fields.List(fields.Nested('SubjectClassSchema', only=['id','subject.name']))
     # Validations
     hired_date = fields.Date()
     job_title = fields.String(required=True, validate=And(
@@ -41,5 +43,5 @@ class EmployeeSchema(ma.Schema):
 
     
     class Meta:
-        fields = ('user', 'hired_date', 'job_title', 'department', 'is_admin')
+        fields = ('user', 'hired_date', 'job_title', 'department', 'is_admin', 'subject_classes')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
