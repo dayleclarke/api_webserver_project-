@@ -8,6 +8,7 @@ from models.enrollment import Enrollment
 from models.subject import Subject
 from models.employee import Employee
 from models.address import Address
+from models.student_relation import StudentRelation
 
 db_commands = Blueprint('db', __name__)
 
@@ -53,7 +54,7 @@ def seed_db():
             first_name = 'Danielle',
             # middle_name = 'Jane',
             last_name = 'Clark',
-            password=bcrypt.generate_password_hash('ExamplePassword').decode('utf-8'),
+            password=bcrypt.generate_password_hash('ExamplePassword1!').decode('utf-8'),
             email = 'danielle.clark@bgbc.edu.au',
             phone = '0416393531',
             address = addresses[0],
@@ -66,7 +67,7 @@ def seed_db():
             first_name = 'Damion',
             middle_name = 'George',
             last_name = 'Burns',
-            password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
+            password=bcrypt.generate_password_hash('ChangeMe!1').decode('utf-8'),
             email = 'damion.burns@bgbc.edu.au',
             phone = '0405301451',
             address = addresses[1],
@@ -79,7 +80,7 @@ def seed_db():
             first_name = 'Isabelle',
             middle_name = 'Margaret',
             last_name = 'Smith',
-            password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
+            password=bcrypt.generate_password_hash('ChangeMe1!').decode('utf-8'),
             email = 'Isabelle.Smith@bgbc.edu.au',
             phone = '0405301444',
             address = addresses[2],
@@ -92,12 +93,36 @@ def seed_db():
             first_name = 'Gabriella',
             middle_name = 'Sasha',
             last_name = 'Jones',
-            password=bcrypt.generate_password_hash('ChangeMe').decode('utf-8'),
+            password=bcrypt.generate_password_hash('ChangeMe!%').decode('utf-8'),
             email = 'gabriella.jones@bgbc.edu.au',
             phone = '0408301554',
             dob = '2005-04-07',
             gender = 'female',
             type = 'Student'
+        ),
+        User(
+            title = 'Mrs',
+            first_name = 'Janet',
+            middle_name = 'Jane',
+            last_name = 'Stone',
+            password=bcrypt.generate_password_hash('ChangeMe2**').decode('utf-8'),
+            email = 'janet.stone12@gmail.com',
+            phone = '0405301554',
+            dob = '1975-12-07',
+            gender = 'female',
+            type = 'Caregiver'
+        ),
+        User(
+            title = 'Mr',
+            first_name = 'Edward',
+            middle_name = 'Michael',
+            last_name = 'Smith',
+            password=bcrypt.generate_password_hash('ChangeMe2&').decode('utf-8'),
+            email = 'eddy.m.smith@gmail.com',
+            phone = '0404501554',
+            dob = '1968-02-10',
+            gender = 'male',
+            type = 'Caregiver'
         )
     ]
     db.session.add_all(users)
@@ -139,6 +164,24 @@ def seed_db():
         )
     ]
     db.session.add_all(students)
+    db.session.commit()
+
+    student_relations = [        
+        StudentRelation(
+            relationship_to_student = 'Mother',
+            is_primary_contact = True,
+            user = users[4],
+            student = students[0]
+        ),
+        StudentRelation(
+            relationship_to_student = 'Father',
+            is_primary_contact = True,
+            user = users[5],
+            student = students[1]
+        )
+
+    ]
+    db.session.add_all(student_relations)
     db.session.commit()
     subjects = [
         Subject(

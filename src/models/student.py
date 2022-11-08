@@ -18,13 +18,14 @@ class Student(db.Model):
     
     user = db.relationship('User', back_populates='student')
     enrollments = db.relationship('Enrollment', back_populates='student', cascade= 'all, delete') # Enrollment is plural as a student can have many enrollments but student is singular as each enrollment relates to exactly one student. Student is the parent enrollment is the child. If a student is deleted all their enrollments need to be deleted too. Back populates is an attribute name that exsists in the related model which in this case is enrollment. 
+    student_relations = db.relationship('StudentRelation', back_populates='student', cascade= 'all, delete')
 
 
 class StudentSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.    
-    user = fields.Nested(UserSchema, exclude= ['password', 'employee'])
+    user = fields.Nested(UserSchema, exclude= ['password', 'employee', 'student'])
     # enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
-    
+    student_relations = fields.List(fields.Nested('StudentRelationSchema', exclude = ['student', 'user.student_relations']))
     # Validations
     
     homegroup = fields.String(required=True, validate=And(
@@ -46,6 +47,6 @@ class StudentSchema(ma.Schema):
 
     
     class Meta:
-        fields = ('user', 'homegroup', 'enrollment_date', 'year_level', 'birth_country')
+        fields = ('user', 'homegroup', 'enrollment_date', 'year_level', 'birth_country', 'student_relations')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
 

@@ -3,7 +3,7 @@ from marshmallow import fields, validates
 from models.user import User, UserSchema
 from marshmallow.exceptions import ValidationError
 from datetime import date
-from marshmallow.validate import Length, OneOf, And, Regexp, Range
+from marshmallow.validate import Length, Regexp, Range
 
 class Address(db.Model):
     __tablename__ = 'addresses' # Renames the table to be plural
@@ -16,7 +16,6 @@ class Address(db.Model):
     postcode = db.Column(db.Integer, nullable= False) 
     # Overseas addresses are not permitted in this system. This may be updated in future sprints which would involve changing this to a string to allow letters/country codes. Then another table would be required to indicate the country each postcode relates to. 
     # States are also not recorded in the database. That could also be added (requiring an additional table) in a future sprint. 
-    # Establish a one-to-many relationship between the address and the user model. 
 
     user = db.relationship('User', back_populates='address')     # This will provide a list of all the users who live at this address. Now address.cards can be used to return a python list of all the users at that address. Each element in the list will be a user object (an instance of the user model).
     # relationship() will take a number of parameters. The first parameter indicates which other model (class name) it relates to as a string. User will encapsulate data that's in the User model.  
