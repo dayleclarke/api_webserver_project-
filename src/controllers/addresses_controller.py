@@ -94,3 +94,11 @@ def delete_one_address(id):
         return {'error': f'Address not found with id {id}.'}, 404
 
 
+
+test_data= {
+        "complex_number": 14,
+        "street_number": 20,
+        "street_name": "Captain Road",
+        "suburb": "West End",
+        "postcode": 4006
+    }

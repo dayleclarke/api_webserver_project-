@@ -17,7 +17,7 @@ class Address(db.Model):
     # Overseas addresses are not permitted in this system. This may be updated in future sprints which would involve changing this to a string to allow letters/country codes. Then another table would be required to indicate the country each postcode relates to. 
     # States are also not recorded in the database. That could also be added (requiring an additional table) in a future sprint. 
 
-    user = db.relationship('User', back_populates='address')     # This will provide a list of all the users who live at this address. Now address.cards can be used to return a python list of all the users at that address. Each element in the list will be a user object (an instance of the user model).
+    users = db.relationship('User', back_populates='address')     # This will provide a list of all the users who live at this address. Now address.cards can be used to return a python list of all the users at that address. Each element in the list will be a user object (an instance of the user model).
     # relationship() will take a number of parameters. The first parameter indicates which other model (class name) it relates to as a string. User will encapsulate data that's in the User model.  
 #back_populates adds a propery to User called address so that if I want to get the whole address object for a user I can say user.address. 
 # 
@@ -52,8 +52,10 @@ class AddressSchema(ma.Schema):
     suburb = fields.String(required=True, validate=
         Length(min=2, error='Suburb name must be at least 2 characters long'))
     postcode = fields.Integer(required=True, validate=Range(min=200, max=9999)) # smallest Australian postcode is 200 (in the ACT) and the largest is 9999 (in QLD)
+    users = fields.List(fields.Nested('UserSchema', exclude = ['address']))
+ 
     
     class Meta:
-        fields = ('complex_number', 'street_number', 'street_name', 'suburb', 'postcode')
+        fields = ('complex_number', 'street_number', 'street_name', 'suburb', 'postcode', 'users')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
 

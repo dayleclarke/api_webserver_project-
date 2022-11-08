@@ -165,20 +165,27 @@ def delete_one_user(id):
 
 
 
-# {    "title": "Ms",
-#     "first_name": "Rachael",
-#     "middle_name": "Anne",
-#     "last_name": "Cook",
-#     "password": "hamAnd335*",
-#     "email": "test.coggfg4ttt@bgbc.edu.au",
-#     "phone": "0414563531",
-#     "dob": "1980-09-02",
-#     "gender": "female",
-#     "type": "Student",
-#     "student": {
-#         "homegroup": "WH01",
-#         "enrollment_date": "2020-01-01",
-#         "year_level": 9,
-#         "birth_country": "Australia"
-#         }
-# }
+{   "title": "Ms",
+    "first_name": "Rachael",
+    "middle_name": "Anne",
+    "last_name": "Cook",
+    "password": "hamAnd335*",
+    "email": "test.coggfg4ttt@bgbc.edu.au",
+    "phone": "0414563531",
+    "dob": "1980-09-02",
+    "gender": "female",
+    "type": "Student",
+    "address": {
+            "complex_number": 14,
+            "street_number": 20,
+            "street_name": "Captain Road",
+            "suburb": "West End",
+            "postcode": 4006
+    },
+    "student": {
+            "homegroup": "WH01",
+            "enrollment_date": "2020-01-01",
+            "year_level": 9,
+            "birth_country": "Australia"
+        }
+}

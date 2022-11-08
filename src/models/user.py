@@ -29,7 +29,7 @@ class User(db.Model):
     
     address_id = db.Column(db.Integer, db.ForeignKey('addresses.id')) 
     # The relation then needs to be defined with Relationship().  This takes numerous parameters. The first parameter indicates which other model (class name) it relates to as a string. Address will encapsulate data from the Address model.  This allows an address object to be provided for each user. The second parameter back_populates is used to specify the other side of the relationship.  It adds a field to each address called user that will return the entire user object for an address. 
-    address = db.relationship('Address', back_populates='user')
+    address = db.relationship('Address', back_populates='users')
 
     
     # Establish a one-to-one relationship between user and employee. One user can have zero to one employee information stored about them (not all users are employees) and each employee will have exactly one entry in the user’s table to store their personal information. Employee is singular as a user can only relate to one employee.  
@@ -49,7 +49,7 @@ class UserSchema(ma.Schema):
     # Marshmallow allows SQLAlchemy models to be converted into JSON.  The following schema is required to define which model fields are to be converted. 
     
     # Where a field represents an object from a related table Marshmallow needs to be told what schema to use to process the attribute so that it can be represented as a nested field.  
-    address = fields.Nested('AddressSchema') # When it needs to process address it should process it as a nested field using the Address Schema.  
+    address = fields.Nested('AddressSchema', exclude=['users']) # When it needs to process address it should process it as a nested field using the Address Schema.  
     student = fields.Nested('StudentSchema', exclude=['user']) # User details are excluded to avoid duplication of data and a RecursionError.   
     employee = fields.Nested('EmployeeSchema', exclude=['user'])
     

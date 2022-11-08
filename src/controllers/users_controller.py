@@ -2,6 +2,7 @@
 from flask import Blueprint, request
 from init import db, bcrypt
 from models.user import User, UserSchema
+from models.address import Address, AddressSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Adding a blueprint for users. This will automatically add the prefix users to the
@@ -15,19 +16,32 @@ users_bp = Blueprint('users', __name__, url_prefix='/users') # users is a resour
 def create_user():
     # Create a new Teacher model instance
     # load applies the validation rules set on the schema. 
-    data = UserSchema().load(request.json)
+    data = AddressSchema().load(request.json)
+
+    address = Address(
+            complex_number = data['complex_number'], 
+            street_number = data['street_number'], 
+            street_name = data['street_name'], 
+            suburb = data['suburb'], 
+            postcode = data['postcode']
+            )
+    # Add and commit card to DB
+    db.session.add(address)
+    db.session.commit()
+       
+    # data = UserSchema().load(request.json)
 
     user = User(
-        title = data['title'],
-        first_name = data['first_name'],
-        middle_name = data['middle_name'],
-        last_name = data['last_name'],
-        password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
-        email = data['email'],
-        phone = data['phone'],
-        dob = data['dob'],
-        gender = data['gender'],
-        type = data['type'] 
+        title = data['users']['title'],
+        first_name = data['users']['first_name'],
+        middle_name = data['users']['middle_name'],
+        last_name = data['users']['last_name'],
+        password = bcrypt.generate_password_hash(request.json['users']['password']).decode('utf8'),
+        email = data['users']['email'],
+        phone = data['users']['phone'],
+        dob = data['users']['dob'],
+        gender = data['users']['gender'],
+        type = data['users']['type'] 
     )
     # Add and commit card to DB
     db.session.add(user)
@@ -101,5 +115,6 @@ def delete_one_user(id):
     # If the employee_id doesn't exist in the database return a not found (404) error
     else:
         return {'error': f'User not found with id {id}.'}, 404
+
 
 
