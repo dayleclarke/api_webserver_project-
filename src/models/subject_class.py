@@ -34,6 +34,6 @@ class SubjectClassSchema(ma.Schema):
     timetable_line = fields.Integer(validate=Range(min=1, max=6))
     
     class Meta:
-        fields = ('id','room', 'timetable_line', 'subject', 'employee','enrollments')
+        fields = ('id','room', 'timetable_line', 'subject', 'employee_id','employee','enrollments')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order. 
 

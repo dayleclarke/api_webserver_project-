@@ -59,7 +59,7 @@ def get_one_address(id):
 @addresses_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
 # @jwt_required()
 def update_one_address(id):
-    # A route to update one user resource
+    # A route to update one address resource
     stmt = db.select(Address).filter_by(id=id)
     address = db.session.scalar(stmt)
 

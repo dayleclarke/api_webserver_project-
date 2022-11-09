@@ -4,6 +4,7 @@ from init import db, bcrypt
 from models.subject_class import SubjectClass, SubjectClassSchema
 from models.subject import Subject, SubjectSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from pprint import pprint
 
 # Add a blueprint for subjects. This will automatically add the prefix subject to the start of all URL's with this blueprint. 
 subjects_bp = Blueprint('subjects', __name__, url_prefix='/subjects') 
@@ -102,9 +103,11 @@ def create_subject_class(subject_id):
     # Create a new SubjectClass model instance
     # Select the subject to add a class to based on the incoming subject_id
     data = SubjectClassSchema().load(request.json) # This applies the validation rules set on the schema. 
-    # 
+    # Build the query to select the correct student. 
     stmt = db.select(Subject).filter_by(id=subject_id)
+    # Execute the query
     subject = db.session.scalar(stmt)
+    # if the subject included in the URL parameter is valid then add an instance of the SubjectClass
     if subject:
         subject_class = SubjectClass(
             id = data['id'],
@@ -133,7 +136,7 @@ def get_all_classes():
 
 @subjects_bp.route('/classes/<string:id>') 
 def get_one_class(id):
-    # A route to return one instance of a subject based on the subject id. 
+    # A route to return one instance of a subject class based on the subject id. 
     stmt = db.select(SubjectClass).filter_by(id=id)
     subject_classes = db.session.scalar(stmt)
     if subject_classes:    
@@ -143,26 +146,25 @@ def get_one_class(id):
         #  This will return a not found 404 error.  
         return {'error': f'Class not found with id {id}.'}, 404
 
-# A route to return one instance of a subject based on the subject id. 
-    # stmt = db.select(Subject).filter_by(id=id)
-    # subject = db.session.scalar(stmt)
-    # if subject:    
-    #     return SubjectSchema().dump(subject)
-    # else:
-    #     # This is the error that will be returned if there is no subject with that ID.
-    #     #  This will return a not found 404 error.  
-    #     return {'error': f'Subject not found with id {id}.'}, 404
+@subjects_bp.route('/classes/<string:id>/', methods=['PUT', 'PATCH']) 
+def update_one_class(id):
+# A route to update one subject_class resource (SQL: Update subjects_classes set .... where id = id)
+    stmt = db.select(SubjectClass).filter_by(id=id)
+    subject_class = db.session.scalar(stmt)
 
-# # This specifies a restful parameter of employee_id that will be an integer. It will only match if the value passed in is an integer. 
-# @subjects_bp.route('/<int:id>/')
-# def get_one_user(id):
-#     # A route to retrieve a single user resource based on their employee_id
-#     stmt = db.select(User).filter_by(id=id)
-#     user = db.session.scalar(stmt) # change this to scalar singular as this is only one we are retrieving 
-#     if user:
-#         return UserSchema().dump(user) # remove the many=True because we are only returning a single Card. 
-#     else:
-#         # This is the error that will be returned if there is no employee with that ID.
-#         #  This will return a not found 404 error.  
-#         return {'error': f'User not found with id {id}.'}, 404
-
+    data = SubjectClassSchema().load(request.json)
+    if subject_class:    
+        subject_class.id = data.get('id') or subject_class.id,
+        subject_class.employee_id = data.get('employee_id') or subject_class.employee_id,
+        subject_class.room = data.get('room') or subject_class.room,
+        subject_class.timetable_line = data.get('timetable_line') or subject_class.timetable_line
+    
+        # Add and commit subject_class to DB
+        db.session.add(subject_class)
+        db.session.commit()
+        # Respond to client
+        return SubjectClassSchema().dump(subject_class), 201
+    else:
+        # This is the error that will be returned if there is no subject with that ID.
+        #  This will return a not found 404 error.  
+        return {'error': f'Class not found with id {id}.'}, 404
