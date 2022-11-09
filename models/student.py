@@ -25,7 +25,7 @@ class StudentSchema(ma.Schema):
     # This allows the models to be serialized and deserialized to and from JSON.    
     user = fields.Nested(UserSchema, exclude= ['id','password', 'employee', 'student', 'student_relations'])
     # enrollments = fields.List(fields.Nested('EnrollmentSchema', only = ['date', 'subject_class']))
-    student_relations = fields.List(fields.Nested('StudentRelationSchema', exclude = ['student', 'user.student_relations']))
+    student_relations = fields.List(fields.Nested('StudentRelationSchema', exclude = ['student_id', 'user_id','student', 'user.student_relations']))
     # Validations
     
     homegroup = fields.String(required=True, validate=And(

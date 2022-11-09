@@ -20,7 +20,7 @@ def create_enrollment():
         subject_class_id = data['subject_class_id'],
         student_id = data['student_id']
     )
-    # Add and commit card to DB
+    # Add and commit enrollment to DB
     db.session.add(enrollment)
     db.session.commit()
     # Respond to client
@@ -74,17 +74,15 @@ def update_one_enrollment(id):
     # A 404 error with a custom message will be returned if there is no enrolment with that id. 
         return {'error': f'Enrolment not found with enrolment_id {id}.'}, 404
 
-# DELETE Subject
+# DELETE Enrollment
 @enrollments_bp.route('/<int:id>/', methods=['DELETE'])
 # @jwt_required()
 def delete_one_enrollment(id):
     # A route to delete one enrollment resource
     #(Delete from enrollments where id = id;)
-
     #Select the correct enrollement resource through a query
     stmt = db.select(Enrollment).filter_by(id=id)
-    # Execute the query
-    enrollment = db.session.scalar(stmt)
+    enrollment = db.session.scalar(stmt)# Execute query
      # If an enrollment exists with the specified id delete the enrollment and return a message in JSON stating the deletion was successul. 
     if enrollment:
         db.session.delete(enrollment)
@@ -94,7 +92,7 @@ def delete_one_enrollment(id):
     else:
         return {'error': f'Enrollment not found with enrollment_id {id}.'}, 404
 
-test_enrolment = {
+test_enrollment = {
     "date": "2023-01-01",
     "subject_class_id": "09EE01-2023",
     "student_id": 1

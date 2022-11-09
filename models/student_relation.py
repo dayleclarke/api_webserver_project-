@@ -18,15 +18,11 @@ class StudentRelation(db.Model):
     
     student = db.relationship('Student', back_populates='student_relations')
     
-
-
 class StudentRelationSchema(ma.Schema):
-    user = fields.Nested('UserSchema', exclude= ['password', 'employee', 'student'])
+    user = fields.Nested('UserSchema', exclude= ['id','password', 'employee', 'student', 'student_relations'])
     student = fields.Nested('StudentSchema', only = ['user.first_name', 'user.last_name'])
-
-
-    
+   
     class Meta:
-        fields = ('student', 'user', 'relationship_to_student', 'is_primary_contact')
+        fields = ('student_id', 'student', 'user_id', 'user', 'relationship_to_student', 'is_primary_contact')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
 
