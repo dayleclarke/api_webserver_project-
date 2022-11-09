@@ -1,47 +1,20 @@
-# This module contains the CRUD operations for the students model.
+# This module contains the CRUD operations for the Students model.
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.exc import IntegrityError
 from init import db, bcrypt
 from models.student import Student, StudentSchema
 from models.user import User, UserSchema
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from sqlalchemy.exc import IntegrityError
 
-# Adding a blueprint for users. This will automatically add the prefix users to the
-# start of all URL's with this blueprint. 
+# Adding a blueprint for students. This will automatically add the prefix students to the start of all URL's with this blueprint. 
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
 
 # #CREATE
-# # Add one student with an exsiting user account:
-# @students_bp.route('/<int:user_id>/', methods=['POST'])
-# # @jwt_required()
-# def create_student(user_id):
-#     data = StudentSchema().load(request.json)
-#     # Create a new SubjectClass model instance
-#     # Select the subject to add a class to based on the incoming subject_id
-#     stmt = db.select(User).filter_by(id=user_id)
-#     user = db.session.scalar(stmt)
-#     if user:
-#         student = Student(
-#             user_id = user.id,
-#             homegroup = data['homegroup'],
-#             enrollment_date = data['enrollment_date'],
-#             year_level = data['year_level'],
-#             birth_country = data['birth_country']
-#         )
-        
-#         # Add and commit card to DB
-#         db.session.add(student)
-#         db.session.commit()
-#         # Respond to client
-#         return StudentSchema().dump(student), 201
-#     else:
-#         return {'error': f'User not found with id {user_id}.'}, 404
-
 # A route to create one new student resource 
 @students_bp.route('/', methods=['POST'])
 # @jwt_required()
 def create_user_and_student():
-    # Create a new student and user model instance for the new student. 
+    # Create a new student and user model instance for the new student.     fggffgdf
     # first create a new instance of the user based on the provided input.
 
     data = UserSchema().load(request.json)
@@ -72,53 +45,26 @@ def create_user_and_student():
     return StudentSchema().dump(student), 201
     # return UserSchema().dump(user), 201
 
-    # # Add and commit the user to the database if there are no issues with the input.
-    # try:
-    
-    #     # get the new user's id with the provided email address because it is a unique field. 
-    #     stmt = db.select(User).filter_by(email=data['email'])
-    #     user = db.session.scalar(stmt)
-
-    #     #create a new student instance with the user_id from the user just created. 
-    #     data = StudentSchema().load(request.json)
-    #     student = Student(
-    #         user_id = user.id,
-    #         homegroup = data['student.homegroup'],
-    #         enrollment_date = data['student.enrollment_date'],
-    #         year_level = data['student.year_level'],
-    #         birth_country = data['student.birth_country']
-    #     )
-    #     # Add and commit the new student to the DB
-    #     db.session.add(student)
-    #     db.session.commit()
-    #     # Respond to client
-        
-    #     return StudentSchema().dump(student), 201
-    # except IntegrityError:
-    #     return {'message': 'School email address already exists'}, 409
-
-
 # READ
-@students_bp.route('/') # because of the url prefix the blueprint will automatically make this /cards/
-#This attaches the route to the blueprint
+@students_bp.route('/') 
 def get_all_students():
-    # A route to return all instances of the users resource in assending alphabetical order by last_name
-    stmt = db.select(Student)
-    students = db.session.scalars(stmt)
-    return StudentSchema(many=True).dump(students)
+# A route to return all instances of the students resource in assending order by ID (SQL: select * from students order by ID number)
+    stmt = db.select(Student).order_by(Student.id) # Build query
+    students = db.session.scalars(stmt) # Execute query
+    return StudentSchema(many=True).dump(students) # Respond to client
 
-# This specifies a restful parameter of employee_id that will be an integer. It will only match if the value passed in is an integer. 
-@students_bp.route('/<int:id>/')
-def get_one_student(id):
-    # A route to retrieve a single user resource based on their employee_id
-    stmt = db.select(Student).filter_by(id=id)
-    student = db.session.scalar(stmt) # change this to scalar singular as this is only one we are retrieving 
-    if student:
-        return StudentSchema().dump(student) # remove the many=True because we are only returning a single Card. 
+# This specifies a restful parameter of student_id that will be an integer. It will only match if the value passed in is an integer. 
+@students_bp.route('/<int:student_id>/') # Note this is student_id not user_id
+def get_one_student(student_id):
+    # A route to retrieve a single student resource based on their student_id
+    # (SQL: select * from users where id=student_id)
+    stmt = db.select(Student).filter_by(id=student_id) # Build query
+    student = db.session.scalar(stmt) # Execute query (scalar is singular as only one user instance is returned. 
+    if student:  # If the student_id belongs to an exsiting student then return that user instance
+        return StudentSchema().dump(student) # remove the many=True because we are only returning a single Student. 
     else:
-        # This is the error that will be returned if there is no employee with that ID.
-        #  This will return a not found 404 error.  
-        return {'error': f'Student not found with id {id}.'}, 404
+        # A 404 error with a custom message will be returned if there is no student with that student_id.  
+        return {'error': f'Student not found with id {student_id}.'}, 404
 
 # # UPDATE
 # @students_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
@@ -189,3 +135,4 @@ def delete_one_user(id):
             "birth_country": "Australia"
         }
 }
+

@@ -60,7 +60,7 @@ def seed_db():
             address = addresses[0],
             dob = '1987-12-07',
             gender = 'female',
-            type = 'Teacher'            
+            type = 'Employee'            
         ),
         User(
             title = 'Mr',
@@ -73,7 +73,7 @@ def seed_db():
             address = addresses[1],
             dob = '1985-04-07',
             gender = 'male',
-            type = 'Teacher'
+            type = 'Employee'
         ),
         User(
             title = 'Miss',
