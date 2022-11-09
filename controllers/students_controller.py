@@ -1,4 +1,4 @@
-# This module contains the CRUD operations for the Students model.
+# This module contains the CRUD operations for the Student model.
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import IntegrityError

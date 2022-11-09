@@ -26,15 +26,14 @@ def create_enrollment():
     # Respond to client
     return EnrollmentSchema().dump(enrollment), 201
 
-# READ Subject
+# READ Enrollment
 @enrollments_bp.route('/') 
 def get_all_enrollments():
     # A route to return all instances of the enrollments resource in assending order by subject_class_id 
     # (select * from enrollments order by subject_class_id;)
-    # Make the query
-    stmt = db.select(Enrollment).order_by(Enrollment.subject_class_id)
-    # Execute the query
-    enrollments = db.session.scalars(stmt)
+    
+    stmt = db.select(Enrollment).order_by(Enrollment.subject_class_id) # Build query
+    enrollments = db.session.scalars(stmt) # Execute the query
     # Return the results to the user in JSON format
     return EnrollmentSchema(many=True).dump(enrollments)
 
@@ -44,41 +43,36 @@ def get_one_enrollment(id):
     # A route to return one instance of a enrollment based on the enrollment id. 
     # (select * from enrollments where id = id;)
     #Make the query
-    stmt = db.select(Enrollment).filter_by(id=id)
-    # Execute the query
-    enrollment = db.session.scalar(stmt)
+    stmt = db.select(Enrollment).filter_by(id=id) # Build query
+    enrollment = db.session.scalar(stmt) # Execute query
     # If an enrollment exists with the specified id return the resource in JSON format
     if enrollment:    
         return EnrollmentSchema().dump(enrollment)
     else:
-        # This is the error that will be returned if there is no enrollment with that ID.
-        #  This will return a not found 404 error.  
-        return {'error': f'Enrollment not found with id {id}.'}, 404
+        # A 404 error with a custom message will be returned if there is no enrolment with that id.    
+        return {'error': f'Enrolment not found with id {id}.'}, 404
 
 # UPDATE Enrollment
 @enrollments_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
 # @jwt_required()
 def update_one_enrollment(id):
-    # A route to update one enrollment resource
+    # A route to update one enrollment resource (SQL: Update enrollments set .... where id = id)
     # Select the correct enrollement resource through a query
-    stmt = db.select(Enrollment).filter_by(id=id)
-    # Execute the query
-    enrollment = db.session.scalar(stmt)
+    stmt = db.select(Enrollment).filter_by(id=id) # Build  query
+    enrollment = db.session.scalar(stmt) # Execute query
     # If an enrollment exists with the specified id update the resource attributes to match those provided in the JSON body. If a field is not provided leave it as it was before.
-    if enrollment:
-        # This allows the user's JSON input to be passed through the Schema to apply validation. 
-        data = EnrollmentSchema().load(request.json.get)
-        
-        enrollment.id = data['id'] or enrollment.id 
-        enrollment.date = data['date'] or enrollment.date
-        enrollment.subject_class_id = data['subject_class_id'] or enrollment.subject_class_id
-        enrollment.student_id = data['student_id'] or enrollment.student_id
-    
-              
-        db.session.commit()      
+    data = EnrollmentSchema().load(request.json) # This allows the user's JSON input to be passed through the Schema to apply validation.
+    if enrollment: 
+        enrollment.id = data.get('id') or enrollment.id 
+        enrollment.date = data.get('date') or enrollment.date
+        enrollment.subject_class_id = data.get('subject_class_id') or enrollment.subject_class_id
+        enrollment.student_id = data.get('student_id') or enrollment.student_id   
+
+        db.session.commit() # Commit update      
         return EnrollmentSchema().dump(enrollment)
     else:
-        return {'error': f'Enrollment not found with enrollment_id {id}.'}, 404
+    # A 404 error with a custom message will be returned if there is no enrolment with that id. 
+        return {'error': f'Enrolment not found with enrolment_id {id}.'}, 404
 
 # DELETE Subject
 @enrollments_bp.route('/<int:id>/', methods=['DELETE'])
@@ -99,3 +93,10 @@ def delete_one_enrollment(id):
     # If the resource doesn't exist return a 404 with a descriptive error message. 
     else:
         return {'error': f'Enrollment not found with enrollment_id {id}.'}, 404
+
+test_enrolment = {
+    "date": "2023-01-01",
+    "subject_class_id": "09EE01-2023",
+    "student_id": 1
+}
+        
