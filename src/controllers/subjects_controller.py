@@ -65,7 +65,8 @@ def update_one_subject(id):
     # Execute the query
     subject = db.session.scalar(stmt)
     data = SubjectSchema().load(request.json) # This applies the validation rules set on the schema. 
-    if subject:
+    # If a subject with that id exsists then update any provided fields
+    if subject: 
         subject.id = data.get('id') or subject.id 
         subject.name = data.get('name') or subject.name
         subject.year_level = data.get('year_level') or subject.year_level
@@ -94,33 +95,14 @@ def delete_one_subject(id):
     else:
         return {'error': f'Subject not found with id {id}.'}, 404
        
-# @subjects_bp.route('/<string:subject_id>/classes', methods=['POST'])
-# # @jwt_required()
-# def create_subject_class(subject_id):
-#     # Create a new SubjectClass model instance
-#     data = SubjectClassSchema().load(request.json)
-
-#     subject_class = SubjectClass(
-#         id = data['id'],
-#         employee_id = data['empoyee_id'],
-#         room = data['room'],
-#         timetable_line = data['timetable_line'],
-#         subject_id = data['subject_id']
-#     )
-#     # Add and commit card to DB
-#     db.session.add(subject_class)
-#     db.session.commit()
-#     # Respond to client
-#     return SubjectClassSchema().dump(subject_class), 201
-
-# # CREATE Class
+# CREATE Class
 @subjects_bp.route('/<string:subject_id>/classes', methods=['POST'])
 # @jwt_required()
 def create_subject_class(subject_id):
     # Create a new SubjectClass model instance
     # Select the subject to add a class to based on the incoming subject_id
-    data = SubjectClassSchema().load(request.json)
-    
+    data = SubjectClassSchema().load(request.json) # This applies the validation rules set on the schema. 
+    # 
     stmt = db.select(Subject).filter_by(id=subject_id)
     subject = db.session.scalar(stmt)
     if subject:
