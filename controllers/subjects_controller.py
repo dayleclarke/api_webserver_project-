@@ -10,7 +10,7 @@ from pprint import pprint
 subjects_bp = Blueprint('subjects', __name__, url_prefix='/subjects') 
 
 #CREATE Subject
-# A route to create one new subject_class
+# A route to create one new subject
 @subjects_bp.route('/', methods=['POST'])
 # @jwt_required()
 def create_subject():
@@ -34,23 +34,19 @@ def create_subject():
 @subjects_bp.route('/') 
 def get_all_subjects():
     # A route to return all instances of the subjects resource in assending order by subject id (select * from subjects order by id)
-    # Build the query
-    stmt = db.select(Subject).order_by(Subject.id)
-    # Execute the query
-    subjects = db.session.scalars(stmt)
-    return SubjectSchema(many=True).dump(subjects)
+    stmt = db.select(Subject).order_by(Subject.id) # Build the query
+    subjects = db.session.scalars(stmt) # Execute the query
+    return SubjectSchema(many=True).dump(subjects) # Respond to client
 
 
-@subjects_bp.route('/<string:id>/') # subject id's are strings (for semantic identification)
+@subjects_bp.route('/<string:id>/') # subject id's are strings (for semantic identification) It consists of the year level and a 2-3 letter abbreviation of the subject name
 def get_one_subject(id):
     # A route to return one instance of a subject resource based on the subject id. 
     # (select * from subjects where id=id)
-    # Build the query
-    stmt = db.select(Subject).filter_by(id=id)
-    # Execute the query
-    subject = db.session.scalar(stmt)
-    if subject:    
-        return SubjectSchema().dump(subject)
+    stmt = db.select(Subject).filter_by(id=id) # Build the query
+    subject = db.session.scalar(stmt) # Execute the query
+    if subject: # If the subject_id belongs to an exsiting subject then return that subject instance   
+        return SubjectSchema().dump(subject) # Respond to client
     else:
         # This is the error that will be returned if there is no subject with that ID.
         #  This will return a not found 404 error.  
@@ -60,7 +56,7 @@ def get_one_subject(id):
 @subjects_bp.route('/<string:id>/', methods=['PUT', 'PATCH'])
 # @jwt_required()
 def update_one_subject(id):
-    # A route to update one user resource (SQL: Update subjects set .... where id = id)
+    # A route to update one subject resource (SQL: Update subjects set .... where id = id)
      # Build the query
     stmt = db.select(Subject).filter_by(id=id)
     # Execute the query
