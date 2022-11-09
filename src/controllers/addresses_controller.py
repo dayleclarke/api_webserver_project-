@@ -1,8 +1,7 @@
-# This module contains the CRUD operations for the users model.
+# This module contains the CRUD operations for the Address model.
 from flask import Blueprint, request
 from init import db, bcrypt
 from models.address import Address, AddressSchema
-from models.user import User, UserSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Adding a blueprint for addresses. This will automatically add the prefix users to the
@@ -63,12 +62,14 @@ def update_one_address(id):
     # A route to update one user resource
     stmt = db.select(Address).filter_by(id=id)
     address = db.session.scalar(stmt)
+
+    data = AddressSchema().load(request.json)
     if address:
-        address.complex_number = request.json.get('complex_number') or address.complex_number # The get method will return none if the key doesn't exist rather than raising an exception. 
-        address.street_number = request.json.get('street_number') or address.street_number
-        address.street_name = request.json.get('street_name') or address.street_name
-        address.suburb = request.json.get('suburb') or address.suburb
-        address.postcode = request.json.get('postcode') or address.postcode
+        address.complex_number = data.get('complex_number') or address.complex_number # The get method will return none if the key doesn't exist rather than raising an exception. 
+        address.street_number = data.get('street_number') or address.street_number
+        address.street_name = data.get('street_name') or address.street_name
+        address.suburb = data.get('suburb') or address.suburb
+        address.postcode = data.get('postcode') or address.postcode
         
         db.session.commit()      
         return AddressSchema().dump(address)

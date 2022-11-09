@@ -56,6 +56,6 @@ class AddressSchema(ma.Schema):
  
     
     class Meta:
-        fields = ('complex_number', 'street_number', 'street_name', 'suburb', 'postcode', 'users')
+        fields = ('id','complex_number', 'street_number', 'street_name', 'suburb', 'postcode', 'users')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
 

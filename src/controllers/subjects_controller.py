@@ -1,50 +1,52 @@
-# This module contains the CRUD operations for the users model.
+# This module contains the CRUD operations for the subjects and subject_classes models.
 from flask import Blueprint, request
 from init import db, bcrypt
 from models.subject_class import SubjectClass, SubjectClassSchema
 from models.subject import Subject, SubjectSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-# Adding a blueprint for users. This will automatically add the prefix users to the
-# start of all URL's with this blueprint. 
-subjects_bp = Blueprint('subjects', __name__, url_prefix='/subjects') # users is a resource made available through the API
+# Add a blueprint for subjects. This will automatically add the prefix subject to the start of all URL's with this blueprint. 
+subjects_bp = Blueprint('subjects', __name__, url_prefix='/subjects') 
 
 #CREATE Subject
 # A route to create one new subject_class
 @subjects_bp.route('/', methods=['POST'])
 # @jwt_required()
 def create_subject():
-    # Create a new Subject model instance
-    data = SubjectSchema().load(request.json)
+    # Create a new Subject model instance (SQL: Insert into subjects (id, name...) values...)
+    data = SubjectSchema().load(request.json) # This applies the validation rules set on the schema. 
 
     subject = Subject(
         id = data['id'],
         name = data['name'],
         year_level = data['year_level'],
-        max_students = data['max_students'],
+        max_students = data.get('max_students'), # Get allows this field to be left blank and the default value to be set. 
         department = data['department']
     )
-    # Add and commit card to DB
+    # Add and commit subject to DB
     db.session.add(subject)
     db.session.commit()
     # Respond to client
     return SubjectSchema().dump(subject), 201
 
 # READ Subject
-@subjects_bp.route('/') # because of the url prefix the blueprint will automatically make this /cards/
-#This attaches the route to the blueprint
+@subjects_bp.route('/') 
 def get_all_subjects():
-    # A route to return all instances of the subjects resource in assending order by subject id (select * from subjects)
+    # A route to return all instances of the subjects resource in assending order by subject id (select * from subjects order by id)
+    # Build the query
     stmt = db.select(Subject).order_by(Subject.id)
+    # Execute the query
     subjects = db.session.scalars(stmt)
     return SubjectSchema(many=True).dump(subjects)
 
 
-@subjects_bp.route('/<string:id>/') # because of the url prefix the blueprint will automatically make this /cards/
-#This attaches the route to the blueprint
+@subjects_bp.route('/<string:id>/') # subject id's are strings (for semantic identification)
 def get_one_subject(id):
-    # A route to return one instance of a subject based on the subject id. 
+    # A route to return one instance of a subject resource based on the subject id. 
+    # (select * from subjects where id=id)
+    # Build the query
     stmt = db.select(Subject).filter_by(id=id)
+    # Execute the query
     subject = db.session.scalar(stmt)
     if subject:    
         return SubjectSchema().dump(subject)
@@ -57,15 +59,18 @@ def get_one_subject(id):
 @subjects_bp.route('/<string:id>/', methods=['PUT', 'PATCH'])
 # @jwt_required()
 def update_one_subject(id):
-    # A route to update one user resource
+    # A route to update one user resource (SQL: Update subjects set .... where id = id)
+     # Build the query
     stmt = db.select(Subject).filter_by(id=id)
+    # Execute the query
     subject = db.session.scalar(stmt)
+    data = SubjectSchema().load(request.json) # This applies the validation rules set on the schema. 
     if subject:
-        subject.id = request.json.get('id') or subject.id 
-        subject.name = request.json.get('name') or subject.name
-        subject.year_level = request.json.get('year_level') or subject.year_level
-        subject.max_students = request.json.get('max_students') or subject.max_students
-        subject.department = request.json.get('department') or subject.department
+        subject.id = data.get('id') or subject.id 
+        subject.name = data.get('name') or subject.name
+        subject.year_level = data.get('year_level') or subject.year_level
+        subject.max_students = data.get('max_students') or subject.max_students
+        subject.department = data.get('department') or subject.department
               
         db.session.commit()      
         return SubjectSchema().dump(subject)
@@ -76,8 +81,10 @@ def update_one_subject(id):
 @subjects_bp.route('/<string:id>/', methods=['DELETE'])
 # @jwt_required()
 def delete_one_subject(id):
-    # A route to update one user resource
+    # A route to delete one subject resource (SQL: Delete from subjects where id=id)
+     # Build the query
     stmt = db.select(Subject).filter_by(id=id)
+    # Execute the query
     subject = db.session.scalar(stmt)
     if subject:
         db.session.delete(subject)
@@ -124,7 +131,7 @@ def create_subject_class(subject_id):
             timetable_line = data['timetable_line'],
             subject = subject
         )
-        # Add and commit card to DB
+        # Add and commit subject_class to DB
         db.session.add(subject_class)
         db.session.commit()
         # Respond to client
@@ -134,8 +141,7 @@ def create_subject_class(subject_id):
 
 
 # READ Class
-@subjects_bp.route('/classes') # because of the url prefix the blueprint will automatically make this /cards/
-#This attaches the route to the blueprint
+@subjects_bp.route('/classes') 
 def get_all_classes():
     # A route to return all instances of the classes resource in assending alphabetical order by last_name
     stmt = db.select(SubjectClass)
