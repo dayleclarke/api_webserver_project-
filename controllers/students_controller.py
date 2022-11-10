@@ -6,6 +6,7 @@ from init import db, bcrypt
 from models.student import Student, StudentSchema
 from models.student_relation import StudentRelation, StudentRelationSchema
 from models.user import User, UserSchema
+from controllers.auth_controller import authorize
 
 # Adding a blueprint for students. This will automatically add the prefix students to the start of all URL's with this blueprint. 
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
@@ -47,8 +48,11 @@ def create_user_and_student():
     return StudentSchema().dump(student), 201
 
 # READ Student
-@students_bp.route('/') 
+@students_bp.route('/')
+@jwt_required() 
 def get_all_students():
+    authorize()
+
 # A route to return all instances of the students resource in assending order by ID (SQL: select * from students order by id)
     stmt = db.select(Student).order_by(Student.id) # Build query
     students = db.session.scalars(stmt) # Execute query

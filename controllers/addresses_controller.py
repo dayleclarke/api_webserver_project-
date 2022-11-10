@@ -28,7 +28,7 @@ def create_address():
     db.session.add(address)
     db.session.commit()
     #  The following return statement will be the response the server sends across the network to the client:  
-    return AddressSchema().dump(address), 201
+    return AddressSchema().dump(address), 201 # The result is automatically Jsonified.
 
 # READ
 @addresses_bp.route('/') 
@@ -45,7 +45,7 @@ def get_one_address(id):
     # A route to retrieve a single user resource based on the restful id parameter.
      # (select * from subjects where id=id)
     # Build the query
-    stmt = db.select(Address).filter_by(id=id)
+    stmt = db.select(Address).filter_by(id=id) # stmt is short for statement
     # Execute the query
     user = db.session.scalar(stmt) # Scalar is now singular as only one Address is returned 
     if user: # If the id belongs to an exsiting address then return that address instance
