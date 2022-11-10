@@ -52,10 +52,11 @@ class AddressSchema(ma.Schema):
     suburb = fields.String(required=True, validate=
         Length(min=2, error='Suburb name must be at least 2 characters long'))
     postcode = fields.Integer(required=True, validate=Range(min=200, max=9999)) # smallest Australian postcode is 200 (in the ACT) and the largest is 9999 (in QLD)
-    users = fields.List(fields.Nested('UserSchema', exclude = ['address']))
+    users = fields.List(fields.Nested('UserSchema', exclude=['address'] ))
  
     
     class Meta:
         fields = ('id','complex_number', 'street_number', 'street_name', 'suburb', 'postcode', 'users')
         ordered = True # puts the keys in the same order as the fields lists above otherwise it will be alphabetical order.
 
+# only = ['id', 'first_name', 'last_name', 'type']

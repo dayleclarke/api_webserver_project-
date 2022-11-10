@@ -1,12 +1,12 @@
 # This module contains the CRUD operations for the Student model.
-from flask import Blueprint, request
+from flask import Blueprint, request, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 from init import db, bcrypt
 from models.student import Student, StudentSchema
 from models.student_relation import StudentRelation, StudentRelationSchema
 from models.user import User, UserSchema
-from controllers.auth_controller import authorize
+from controllers.auth_controller import authorize, auth_employee
 
 # Adding a blueprint for students. This will automatically add the prefix students to the start of all URL's with this blueprint. 
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
@@ -14,11 +14,10 @@ students_bp = Blueprint('students', __name__, url_prefix='/students') # students
 #CREATE User and Student 
 # A route to create one new student resource 
 @students_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required() #Route protected by JWT but accessible by all users
 def create_user_and_student():
     # Create a new student and user model instance for the new student.  
     # first create a new instance of the user based on the provided input. (SQL: Insert into users (title, first_name...) values...)
-
     data = UserSchema().load(request.json)
     user =  User(
         title = data['title'],
@@ -51,7 +50,7 @@ def create_user_and_student():
 @students_bp.route('/')
 @jwt_required() 
 def get_all_students():
-    authorize()
+    auth_employee() # only users who are employees can access this route. 
 
 # A route to return all instances of the students resource in assending order by ID (SQL: select * from students order by id)
     stmt = db.select(Student).order_by(Student.id) # Build query
@@ -60,7 +59,14 @@ def get_all_students():
 
 # This specifies a restful parameter of student_id that will be an integer. It will only match if the value passed in is an integer. 
 @students_bp.route('/<int:student_id>/') # Note this is student_id not user_id
+@jwt_required() 
 def get_one_student(student_id):
+    
+    # Find the user who made the request and check they have authorisation to view that student's details
+    authorize(student_id)
+
+
+
     # A route to retrieve a single student resource based on their student_id
     # (SQL: select * from students where id=student_id)
     stmt = db.select(Student).filter_by(id=student_id) # Build query
@@ -73,8 +79,9 @@ def get_one_student(student_id):
 
 # UPDATE Student
 @students_bp.route('/<int:student_id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
+@jwt_required()
 def update_one_student(student_id):
+    authorize_employee()
     # A route to update one student resource (SQL: Update students set .... where id = id)
     stmt = db.select(Student).filter_by(id=student_id) # Build query
     student = db.session.scalar(stmt) # Execute query

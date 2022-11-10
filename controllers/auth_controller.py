@@ -51,9 +51,48 @@ def auth_login():
         return {'error': 'Invalid email or password'}, 401 # For security reasons users are not told which one is incorrect. This prevents brute force attacks.
     
 # This can be imported this into other modules and called when required. 
-def authorize():
+def auth_employee():
     user_id = get_jwt_identity()
     stmt = db.select(User).filter_by(id=user_id)
     user = db.session.scalar(stmt)
     if not user.type == 'Employee':
         abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client. 
+def auth_admin():
+    user_id = get_jwt_identity()
+    stmt = db.select(User).filter_by(id=user_id)
+    user = db.session.scalar(stmt)
+    if not user.type == 'Employee':
+        abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client.
+    elif not user.employee.is_admin:
+        abort(401)
+
+
+def authorize(student_id):
+    user_id = get_jwt_identity()
+    stmt = db.select(User).filter_by(id=user_id)
+    user = db.session.scalar(stmt)
+    if user.type == 'Student':
+        if not user.student.id == student_id: # If it is any student other than the student who's details they are trying to access then terminate the request response cycle and send an error response message back to the client. 
+            abort(401)
+    elif not user.type == 'Employee': 
+        abort(401)
+
+def auth_address(address_id):
+    user_id = get_jwt_identity() # Get user_id from the JWT token
+    stmt = db.select(User).filter_by(id=user_id) # build query to select the user object at that id
+    user = db.session.scalar(stmt) # execute query
+    if not user.address.id == address_id: # if the user does not have the address listed as their address then
+        if not user.type == 'Employee': 
+            abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client.
+        elif not user.employee.is_admin:
+            abort(401)
+
+def auth_self(id):
+    user_id = get_jwt_identity() # Get user_id from the JWT token
+    stmt = db.select(User).filter_by(id=user_id) # build query to select the user object at that id
+    user = db.session.scalar(stmt) # execute query
+    if not user.id == id: # if the user does not have the same user id as the one they are attempting to select
+        if not user.type == 'Employee':  
+            abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client.
+        elif not user.employee.is_admin:
+            abort(401)

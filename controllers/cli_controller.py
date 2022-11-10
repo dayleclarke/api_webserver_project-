@@ -52,7 +52,7 @@ def seed_db():
         User(
             title = 'Miss',
             first_name = 'Danielle',
-            # middle_name = 'Jane',
+            middle_name = 'Jane',
             last_name = 'Clark',
             password=bcrypt.generate_password_hash('ExamplePassword1!').decode('utf-8'),
             email = 'danielle.clark@bgbc.edu.au',
@@ -159,7 +159,7 @@ def seed_db():
             hired_date = '2010-01-01',
             job_title = 'Teacher',
             department = 'Maths',
-            is_admin = False,
+            is_admin = True,
             user = users[1]
         )
     ]

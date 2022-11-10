@@ -1,18 +1,18 @@
 # This module contains the CRUD operations for the Address model.
-from flask import Blueprint, request
+from flask import Blueprint, request, abort
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from init import db, bcrypt
 from models.address import Address, AddressSchema
-
+from models.user import User, UserSchema
+from controllers.auth_controller import auth_admin, auth_address
 # Adding a blueprint for addresses. This will automatically add the prefix addresses to the
 # start of all URL's with this blueprint. 
 addresses_bp = Blueprint('addresses', __name__, url_prefix='/addresses') # addresses is a resource made available through the API
 
 #CREATE
-
 # Routes are declared with a decorator on the app
 @addresses_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 # A function is defined that the decorator applies to (the route handler).
 def create_address(): 
     # Create a new Address model instance (SQL: Insert into addresses (complete_number, strret_number...) values...)
@@ -32,7 +32,9 @@ def create_address():
 
 # READ
 @addresses_bp.route('/') 
+@jwt_required()
 def get_all_addresses():
+    auth_admin()
     # A route to return all instances of the addresses resource in ascending order by postcode (select * from addresses order by postcode)
     stmt = db.select(Address).order_by(Address.postcode) # Build the query
     addresses = db.session.scalars(stmt) # Execute the query
@@ -40,8 +42,10 @@ def get_all_addresses():
 
 
 @addresses_bp.route('/<int:id>')
+@jwt_required()
 # This specifies a restful parameter of id that will be an integer. It will only match if the value passed in is an integer. 
 def get_one_address(id):
+    auth_address(id)        
     # A route to retrieve a single user resource based on the restful id parameter.
      # (select * from subjects where id=id)
     # Build the query
@@ -56,12 +60,13 @@ def get_one_address(id):
 
 # UPDATE
 @addresses_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
+@jwt_required()
 def update_one_address(id):
+    auth_address(id)
     # A route to update one address resource (SQL: Update addresses set .... where id = id)
     stmt = db.select(Address).filter_by(id=id) # Build the query
     address = db.session.scalar(stmt) # Execute the query
-    data = AddressSchema().load(request.json) # this applies the validation rules set on the schema.
+    data = AddressSchema().load(request.json, partial=True) # this applies the validation rules set on the schema.
     if address:  # If an address with that id exsists then update any provided fields
         address.complex_number = data.get('complex_number') or address.complex_number # The get method will return none if the key doesn't exist rather than raising an exception. 
         address.street_number = data.get('street_number') or address.street_number
@@ -76,9 +81,9 @@ def update_one_address(id):
 
 # DELETE
 @addresses_bp.route('/<int:id>/', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_one_address(id):
-    # authorize()
+    auth_address(id)
     # A route to delete one address resource (SQL: Delete from addresses where id=id)
     stmt = db.select(Address).filter_by(id=id) # Build query 
     address = db.session.scalar(stmt) # Execute query

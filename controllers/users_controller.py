@@ -4,6 +4,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from init import db, bcrypt
 from models.address import Address, AddressSchema
 from models.user import User, UserSchema
+from controllers.auth_controller import auth_admin, auth_self
+from sqlalchemy.exc import IntegrityError
 
 # Adding a blueprint for users. This will automatically add the prefix users to the start of all the following URL's with this blueprint. 
 users_bp = Blueprint('users', __name__, url_prefix='/users') # users is a resource made available through the API
@@ -11,7 +13,7 @@ users_bp = Blueprint('users', __name__, url_prefix='/users') # users is a resour
 #CREATE
 # A route to create one new address and user resource at the same time. 
 @users_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_address_and_user():
     # Create a new Address model instance (SQL: Insert into addresses (complex_number,...) values...)
     data = AddressSchema().load(request.json) # Load applies the validation rules set on the schema. 
@@ -27,65 +29,73 @@ def create_address_and_user():
     db.session.commit()
        
     # Now create a new user instance (SQL: Insert into users (title, first_name...) values...)
+    try:
 
-    user = User(
-        title = data['users'][0]['title'],
-        first_name = data['users'][0]['first_name'],
-        middle_name = data['users'][0]['middle_name'],
-        last_name = data['users'][0]['last_name'],
-        password = bcrypt.generate_password_hash(request.json['users'][0]['password']).decode('utf8'),
-        email = data['users'][0]['email'],
-        phone = data['users'][0]['phone'],
-        dob = data['users'][0]['dob'],
-        gender = data['users'][0]['gender'],
-        address_id = address.id,
-        type = data['users'][0]['type'] 
-    )
-    # Add and commit user to DB
-    db.session.add(user)
-    db.session.commit()
-    # Respond to client
-    return UserSchema().dump(user), 201
+        user = User(
+            title = data['users'][0]['title'],
+            first_name = data['users'][0]['first_name'],
+            middle_name = data['users'][0]['middle_name'],
+            last_name = data['users'][0]['last_name'],
+            password = bcrypt.generate_password_hash(request.json['users'][0]['password']).decode('utf8'),
+            email = data['users'][0]['email'],
+            phone = data['users'][0]['phone'],
+            dob = data['users'][0]['dob'],
+            gender = data['users'][0]['gender'],
+            address_id = address.id,
+            type = data['users'][0]['type'] 
+        )
+        # Add and commit user to DB
+        db.session.add(user)
+        db.session.commit()
+        # Respond to client
+        return UserSchema().dump(user), 201
+    except IntegrityError:
+        return {'error': 'Email address already in use'}, 409
 
 # READ
-@users_bp.route('/') 
+@users_bp.route('/')
+@jwt_required() 
 def get_all_users():
+    auth_admin()
     # A route to return all instances of the users resource in assending alphabetical order by last_name (SQL: select * from users order by last_name)
 
     stmt = db.select(User).order_by(User.last_name) # Build query
     users = db.session.scalars(stmt) # Execute query
     # Respond to client
-    return UserSchema(many=True, exclude=['password']).dump(users)
+    return UserSchema(many=True, exclude= ['student_relations', 'student', 'employee']).dump(users)
 
 @users_bp.route('/<int:id>')
+@jwt_required() 
 # This specifies a restful parameter of id that will be an integer. It will only match if the value passed in is an integer. 
 def get_one_user(id):
+    auth_self(id)
     # A route to retrieve a single user resource based on their id
     # (SQL: select * from users where id=id)
     stmt = db.select(User).filter_by(id=id) # Build query
     user = db.session.scalar(stmt) # Execute query (scalar is singular as only one user instance is returned. 
     if user: # If the id belongs to an exsiting user then return that user instance
-        return UserSchema(exclude=['password']).dump(user) # remove the many=True because we are only returning a single User. 
+        return UserSchema(exclude= ['student_relations', 'student', 'employee']).dump(user) # remove the many=True because we are only returning a single User. 
     else:
         # A 404 error with a custom message will be returned if there is no user with that ID.
         return {'error': f'User not found with id {id}.'}, 404
 
 # UPDATE
 @users_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
+@jwt_required()
 def update_one_user(id):
+    auth_self(id)
     # A route to update one user resource (SQL: Update users set .... where id = id)
     stmt = db.select(User).filter_by(id=id) # Build query
     user = db.session.scalar(stmt) # Execute query
 
-    data = UserSchema().load(request.json) # this applies the validation rules set on the schema.
+    data = UserSchema().load(request.json, partial=True) # this applies the validation rules set on the schema.
     
     if user: # If a user with that id exsists then update any provided fields
         user.title = data.get('title') or user.title # The get method will return none if the key doesn't exist rather than raising an exception. 
         user.first_name = data.get('first_name') or user.first_name
         user.middle_name = data.get('middle_name') or user.middle_name
         user.last_name = data.get('last_name') or user.last_name
-        user.password = bcrypt.generate_password_hash(data['password']).decode('utf8') or user.password
+        user.password = bcrypt.generate_password_hash(data.get('password')).decode('utf8') or user.password
         user.email = data.get('email') or user.email
         user.phone = data.get('phone') or user.phone
         user.dob = data.get('dob') or user.dob
@@ -113,37 +123,3 @@ def delete_one_user(id):
     # If the user_id doesn't exist in the database return a not found (404) error
     else:
         return {'error': f'User not found with id {id}.'}, 404
-
-
-create_data = {   "complex_number": 14,
-    "street_number": 20,
-    "street_name": "Captain Road",
-    "suburb": "West End",
-    "postcode": 4006,
-    "users": [{
-        "title": "Ms",
-        "first_name": "Rachael",
-        "middle_name": "Anne",
-        "last_name": "Cook",
-        "password": "hamAnd335*",
-        "email": "test.coggfg4hhttt@bgbc.edu.au",
-        "phone": "0414563531",
-        "dob": "1980-09-02",
-        "gender": "female",
-        "type": "Student"
-    }]
-}
-
-update_data = {
-    "title": "Ms",
-        "first_name": "Rachael",
-        "middle_name": "Anne",
-        "last_name": "Cook",
-        "password": "hamAnd335*",
-        "email": "rachael.cook@bgbc.edu.au",
-        "phone": "0414563531",
-        "dob": "1980-09-02",
-        "gender": "female",
-        "type": "Student"
-
-}
