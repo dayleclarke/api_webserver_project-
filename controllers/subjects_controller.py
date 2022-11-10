@@ -5,6 +5,7 @@ from models.subject_class import SubjectClass, SubjectClassSchema
 from models.subject import Subject, SubjectSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from pprint import pprint
+from controllers.auth_controller import auth_admin, auth_self
 
 # Add a blueprint for subjects. This will automatically add the prefix subject to the start of all URL's with this blueprint. 
 subjects_bp = Blueprint('subjects', __name__, url_prefix='/subjects') 
@@ -12,8 +13,9 @@ subjects_bp = Blueprint('subjects', __name__, url_prefix='/subjects')
 #CREATE Subject
 # A route to create one new subject
 @subjects_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_subject():
+    auth_admin()
     # Create a new Subject model instance (SQL: Insert into subjects (id, name...) values...)
     data = SubjectSchema().load(request.json) # This applies the validation rules set on the schema. 
     subject = Subject(
@@ -30,15 +32,17 @@ def create_subject():
     return SubjectSchema().dump(subject), 201
 
 # READ Subject
-@subjects_bp.route('/') 
+@subjects_bp.route('/')
 def get_all_subjects():
     # A route to return all instances of the subjects resource in assending order by subject id (select * from subjects order by id)
     stmt = db.select(Subject).order_by(Subject.id) # Build query
     subjects = db.session.scalars(stmt) # Execute query
-    return SubjectSchema(many=True).dump(subjects) # Respond to client
+    return SubjectSchema(many=True, exclude=["subject_classes"]).dump(subjects) # Respond to client
 
 @subjects_bp.route('/<string:id>/') # subject id's are strings (for semantic identification) It consists of the year level and a 2-3 letter abbreviation of the subject name
+@jwt_required() 
 def get_one_subject(id):
+    
     # A route to return one instance of a subject resource based on the subject id. 
     # (select * from subjects where id=id)
     stmt = db.select(Subject).filter_by(id=id) # Build the query
@@ -51,12 +55,13 @@ def get_one_subject(id):
 
 # UPDATE Subject
 @subjects_bp.route('/<string:id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
+@jwt_required()
 def update_one_subject(id):
+    auth_admin()
     # A route to update one subject resource (SQL: Update subjects set .... where id = id)
     stmt = db.select(Subject).filter_by(id=id) # Build query
     subject = db.session.scalar(stmt) # Execute query
-    data = SubjectSchema().load(request.json) # This applies the validation rules set on the schema. 
+    data = SubjectSchema().load(request.json, partial=True) # This applies the validation rules set on the schema. 
     # If a subject with that id exsists then update any provided fields
     if subject: 
         subject.id = data.get('id') or subject.id 
@@ -73,8 +78,9 @@ def update_one_subject(id):
 
 # DELETE Subject
 @subjects_bp.route('/<string:id>/', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_one_subject(id):
+    auth_admin()
     # A route to delete one subject resource (SQL: Delete from subjects where id=id)
     stmt = db.select(Subject).filter_by(id=id) # Build query
     subject = db.session.scalar(stmt) # Execute query
@@ -86,19 +92,11 @@ def delete_one_subject(id):
     else:
         return {'error': f'Subject not found with id {id}.'}, 404
 
-test_subject ={
-    "id": "09SCI",
-    "name": "Junior Science",
-    "year_level": 9,
-    "max_students": 20,
-    "department": "Science"
-  
-}
-
 # CREATE SubjectClass
 @subjects_bp.route('/<string:subject_id>/classes', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_subject_class(subject_id):
+    auth_admin()
     # Create a new SubjectClass model instance
     # Select the subject to add a class to based on the incoming subject_id
     data = SubjectClassSchema().load(request.json) # This applies the validation rules set on the schema. 
@@ -118,7 +116,7 @@ def create_subject_class(subject_id):
         db.session.add(subject_class)
         db.session.commit()
         # Respond to client
-        return SubjectClassSchema().dump(subject_class), 201
+        return SubjectClassSchema(exclude=['enrollments']).dump(subject_class), 201
     # If there is no subject in a database with that provided id return a not found (404) error with a custom error message.
     else:
         return {'error': f'Subject not found with id {subject_id}.'}, 404

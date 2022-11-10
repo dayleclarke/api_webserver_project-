@@ -224,6 +224,28 @@ If not authorised:
 }
 ```
 
+#### Methods:  ['Delete']
+
+- Arguments: id (an integer of the user ID to update)
+- Description: Allows an authorised user to delete one user instance.
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- only employees with admin access
+- Request Body: None
+
+```JSON
+{
+    "message": "The records for Danielle Clark were deleted successfully."
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
 ## Address Routes
 
 ### /addresses/
@@ -421,5 +443,438 @@ If not authorised:
 ```JSON
 {
     "error": "You are not authorized to perform this action"
+}
+```
+
+## Subject Routes
+
+### /Subjects/
+
+- Methods: POST  
+- Arguments: None  
+- Description: Creates a new subject instance in the database  
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token} - Bearer {Token}- employees with admin access only
+- Request Body:
+
+```JSON
+{
+    "id": "09SCI",
+    "name": "Junior Science",
+    "year_level": 9,
+    "max_students": 20,
+    "department": "Science"
+  
+}
+```
+
+- Request response:
+
+ ```JSON
+  {
+{
+    "id": "09SCI",
+    "name": "Junior Science",
+    "year_level": 9,
+    "max_students": 20,
+    "department": "Science",
+    "subject_classes": []
+}
+    }
+```
+
+- Methods: GET  
+- Arguments: None  
+- Description: Returns a JSON list of all the subjects stored in the database ordered by subject_id.
+- Authentication: None
+- Headers-Authorization: None
+- Request Body: None
+- Request Response:  
+
+```JSON
+[
+    {
+        "id": "09EE",
+        "name": "Enterprise Education",
+        "year_level": 9,
+        "max_students": 28,
+        "department": "Business"
+    },
+    {
+        "id": "09ENG",
+        "name": "Junior English",
+        "year_level": 9,
+        "max_students": 28,
+        "department": "English"
+    },
+    {
+        "id": "09MAB",
+        "name": "Maths Beta",
+        "year_level": 9,
+        "max_students": 25,
+        "department": "Maths"
+    }
+]
+```
+
+### /subjects/\<string:id\>  
+
+- Methods: GET  
+- Arguments: id (a string of the subject ID of the subject to return)
+- Description: Returns the subject instance of the subject with the id number provided in the URI parameter.It also includes a nested list of all the subject_class instances for that subject with a list of students enrolled in that class (just their first and last name).
+- Authentication: @jwt_required()  
+- Headers-Authorization: all authenticated users are able to access this information.
+- Request Body: None
+- Request Response:
+
+```JSON
+{
+    "id": "09MAB",
+    "name": "Maths Beta",
+    "year_level": 9,
+    "max_students": 25,
+    "department": "Maths",
+    "subject_classes": [
+        {
+            "id": "09MAB01-2023",
+            "room": "SA1.4",
+            "timetable_line": 3,
+            "employee_id": 2,
+            "employee": {
+                "user": {
+                    "first_name": "Damion",
+                    "last_name": "Burns"
+                }
+            },
+            "enrollments": [
+                {
+                    "student": {
+                        "user": {
+                            "first_name": "Isabelle",
+                            "last_name": "Smith"
+                        }
+                    }
+                },
+                {
+                    "student": {
+                        "user": {
+                            "first_name": "Gabriella",
+                            "last_name": "Jones"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
+
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+If subject id provided in the URI parameter doesn't exist in the database:
+
+```JSON
+{
+    "error": "Subject not found with id 11ACC."
+}
+```
+
+- Methods:  ['PUT', 'PATCH']
+- Arguments: id (a string of the subject ID of the subject to update)
+- Description: Updates the subject instance of the subject with the id number provided in the URI parameter.
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- only employees with admin access.
+- Request Body: Include any fields you wish to update:
+
+```JSON
+{
+    "id": "10SCI",
+    "name": "Junior Science",
+    "year_level": 10,
+    "max_students": 25,
+    "department": "Science"
+}
+```
+
+- Request Response: (all fields are returned)
+
+```JSON
+{
+    "id": "10SCI",
+    "name": "Junior Science",
+    "year_level": 10,
+    "max_students": 25,
+    "department": "Science",
+    "subject_classes": []
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+If subject id provided in the URI parameter doesn't exist in the database:
+
+```JSON
+{
+    "error": "Subject not found with id 11ACC."
+}
+```
+
+- Methods:  [DELETE]
+- id (a string of the subject ID of the subject to update)
+- Description: Deletes the subject instance of the subject with the id number provided in the URI parameter.
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- only employees with admin access.
+- Request Body: None
+- Request Response: 
+
+```JSON
+{
+    "message": "Year 10 Junior Science (10SCI) was deleted successfully."
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+If subject id provided in the URI parameter doesn't exist in the database:
+
+```JSON
+{
+    "error": "Subject not found with id 11ACC."
+}
+```
+## Subject ClassesRoutes
+
+### /Subjects/<string:subject_id>/Classes
+
+- Methods: POST  
+- Arguments: Subject_id (a string of the subject ID of the subject to add a subject_class instance to)  
+- Description: Creates a new subject_class instance of the provided subject in the database. Each class has a maximum class size so typically subjects will have multiple classes covering the same subject area each with different students.  
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token} - Bearer {Token}- employees with admin access only
+- Request Body:
+
+```JSON
+{
+    "id": "09MAB03-2023",
+    "room": "SA1.4",
+    "timetable_line": 3,
+    "employee_id": 2
+}
+  
+```
+
+- Request response: (Note: the request response includes the new instance of the subject_class encluding a nested instance of the parent subject)
+
+ ```JSON
+{
+    "id": "09MAB04-2023",
+    "room": "SA1.4",
+    "timetable_line": 3,
+    "subject": {
+        "id": "09MAB",
+        "name": "Maths Beta",
+        "year_level": 9,
+        "max_students": 25,
+        "department": "Maths"
+    },
+    "employee_id": 2,
+    "employee": {
+        "user": {
+            "first_name": "Damion",
+            "last_name": "Burns"
+        }
+    }
+}
+```
+
+- Methods: GET  
+- Arguments: None  
+- Description: Returns a JSON list of all the subjects stored in the database ordered by subject_id.
+- Authentication: None
+- Headers-Authorization: None
+- Request Body: None
+- Request Response:  
+
+```JSON
+[
+    {
+        "id": "09EE",
+        "name": "Enterprise Education",
+        "year_level": 9,
+        "max_students": 28,
+        "department": "Business"
+    },
+    {
+        "id": "09ENG",
+        "name": "Junior English",
+        "year_level": 9,
+        "max_students": 28,
+        "department": "English"
+    },
+    {
+        "id": "09MAB",
+        "name": "Maths Beta",
+        "year_level": 9,
+        "max_students": 25,
+        "department": "Maths"
+    }
+]
+```
+
+### /subjects/\<string:id\>  
+
+- Methods: GET  
+- Arguments: id (a string of the subject ID of the subject to return)
+- Description: Returns the subject instance of the subject with the id number provided in the URI parameter.It also includes a nested list of all the subject_class instances for that subject with a list of students enrolled in that class (just their first and last name).
+- Authentication: @jwt_required()  
+- Headers-Authorization: all authenticated users are able to access this information.
+- Request Body: None
+- Request Response:
+
+```JSON
+{
+    "id": "09MAB",
+    "name": "Maths Beta",
+    "year_level": 9,
+    "max_students": 25,
+    "department": "Maths",
+    "subject_classes": [
+        {
+            "id": "09MAB01-2023",
+            "room": "SA1.4",
+            "timetable_line": 3,
+            "employee_id": 2,
+            "employee": {
+                "user": {
+                    "first_name": "Damion",
+                    "last_name": "Burns"
+                }
+            },
+            "enrollments": [
+                {
+                    "student": {
+                        "user": {
+                            "first_name": "Isabelle",
+                            "last_name": "Smith"
+                        }
+                    }
+                },
+                {
+                    "student": {
+                        "user": {
+                            "first_name": "Gabriella",
+                            "last_name": "Jones"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
+
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+If subject id provided in the URI parameter doesn't exist in the database:
+
+```JSON
+{
+    "error": "Subject not found with id 11ACC."
+}
+```
+
+- Methods:  ['PUT', 'PATCH']
+- Arguments: id (a string of the subject ID of the subject to update)
+- Description: Updates the subject instance of the subject with the id number provided in the URI parameter.
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- only employees with admin access.
+- Request Body: Include any fields you wish to update:
+
+```JSON
+{
+    "id": "10SCI",
+    "name": "Junior Science",
+    "year_level": 10,
+    "max_students": 25,
+    "department": "Science"
+}
+```
+
+- Request Response: (all fields are returned)
+
+```JSON
+{
+    "id": "10SCI",
+    "name": "Junior Science",
+    "year_level": 10,
+    "max_students": 25,
+    "department": "Science",
+    "subject_classes": []
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+If subject id provided in the URI parameter doesn't exist in the database:
+
+```JSON
+{
+    "error": "Subject not found with id 11ACC."
+}
+```
+
+- Methods:  [DELETE]
+- id (a string of the subject ID of the subject to update)
+- Description: Deletes the subject instance of the subject with the id number provided in the URI parameter.
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- only employees with admin access.
+- Request Body: None
+- Request Response: 
+
+```JSON
+{
+    "message": "Year 10 Junior Science (10SCI) was deleted successfully."
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+If subject id provided in the URI parameter doesn't exist in the database:
+
+```JSON
+{
+    "error": "Subject not found with id 11ACC."
 }
 ```

@@ -109,9 +109,9 @@ def update_one_user(id):
 
 # DELETE
 @users_bp.route('/<int:id>/', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_one_user(id):
-    # authorize()
+    auth_admin()
     # A route to delete one user resource (SQL: Delete from users where id=id)
     stmt = db.select(User).filter_by(id=id) # build query to select card
     user = db.session.scalar(stmt) # execute query

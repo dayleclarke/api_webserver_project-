@@ -57,6 +57,7 @@ def auth_employee():
     user = db.session.scalar(stmt)
     if not user.type == 'Employee':
         abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client. 
+
 def auth_admin():
     user_id = get_jwt_identity()
     stmt = db.select(User).filter_by(id=user_id)
