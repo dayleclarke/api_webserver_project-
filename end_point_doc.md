@@ -630,7 +630,7 @@ If subject id provided in the URI parameter doesn't exist in the database:
 ```
 
 - Methods:  [DELETE]
-- id (a string of the subject ID of the subject to update)
+- id (a string of the subject ID of the subject to delete)
 - Description: Deletes the subject instance of the subject with the id number provided in the URI parameter.
 - Authentication: @jwt_required()  
 - Headers-Authorization: Bearer {Token}- only employees with admin access.
@@ -703,91 +703,119 @@ If subject id provided in the URI parameter doesn't exist in the database:
 }
 ```
 
+### /Subjects/Classes
+
 - Methods: GET  
 - Arguments: None  
-- Description: Returns a JSON list of all the subjects stored in the database ordered by subject_id.
-- Authentication: None
-- Headers-Authorization: None
+- Description: Returns a JSON list of all the subject classes stored in the database.  It also includes nested data about the parent subject.
+- Authentication: @jwt_required()  
+- Headers-Authorization: all authenticated users are able to access this route.
 - Request Body: None
 - Request Response:  
 
 ```JSON
 [
     {
+        "id": "09EE01-2023",
+        "room": "MB2.2",
+        "timetable_line": 2,
+        "subject": {
+            "id": "09EE",
+            "name": "Enterprise Education",
+            "year_level": 9,
+            "max_students": 28,
+            "department": "Business"
+        },
+        "employee_id": 1,
+        "employee": {
+            "user": {
+                "first_name": "Danielle",
+                "last_name": "Clark"
+            }
+        }
+    },
+    {
+        "id": "09EE02-2023",
+        "room": "MB2.4",
+        "timetable_line": 1,
+        "subject": {
+            "id": "09EE",
+            "name": "Enterprise Education",
+            "year_level": 9,
+            "max_students": 28,
+            "department": "Business"
+        },
+        "employee_id": 1,
+        "employee": {
+            "user": {
+                "first_name": "Danielle",
+                "last_name": "Clark"
+            }
+        }
+    }
+]
+```
+
+### /Subjects/Classes<string:subject_class_id\>  
+
+- Methods: GET  
+- Arguments: id (a string of the subject_class ID of the subject_class to return)
+- Description: Returns the subject_class instance of the class with the id number provided in the URI parameter.It also includes a nested parent subject instance and a nested list of students enrolled in the class (including all of their personal information including their nested user and address information).
+- Authentication: @jwt_required()  
+- Headers-Authorization: all employees are able to access this information.
+- Request Body: None
+- Request Response:
+
+```JSON
+{
+    "id": "09EE01-2023",
+    "room": "MB2.2",
+    "timetable_line": 2,
+    "subject": {
         "id": "09EE",
         "name": "Enterprise Education",
         "year_level": 9,
         "max_students": 28,
         "department": "Business"
     },
-    {
-        "id": "09ENG",
-        "name": "Junior English",
-        "year_level": 9,
-        "max_students": 28,
-        "department": "English"
+    "employee_id": 1,
+    "employee": {
+        "user": {
+            "first_name": "Danielle",
+            "last_name": "Clark"
+        }
     },
-    {
-        "id": "09MAB",
-        "name": "Maths Beta",
-        "year_level": 9,
-        "max_students": 25,
-        "department": "Maths"
-    }
-]
-```
-
-### /subjects/\<string:id\>  
-
-- Methods: GET  
-- Arguments: id (a string of the subject ID of the subject to return)
-- Description: Returns the subject instance of the subject with the id number provided in the URI parameter.It also includes a nested list of all the subject_class instances for that subject with a list of students enrolled in that class (just their first and last name).
-- Authentication: @jwt_required()  
-- Headers-Authorization: all authenticated users are able to access this information.
-- Request Body: None
-- Request Response:
-
-```JSON
-{
-    "id": "09MAB",
-    "name": "Maths Beta",
-    "year_level": 9,
-    "max_students": 25,
-    "department": "Maths",
-    "subject_classes": [
+    "enrollments": [
         {
-            "id": "09MAB01-2023",
-            "room": "SA1.4",
-            "timetable_line": 3,
-            "employee_id": 2,
-            "employee": {
+            "student": {
+                "id": 1,
                 "user": {
-                    "first_name": "Damion",
-                    "last_name": "Burns"
-                }
-            },
-            "enrollments": [
-                {
-                    "student": {
-                        "user": {
-                            "first_name": "Isabelle",
-                            "last_name": "Smith"
-                        }
+                    "title": "Miss",
+                    "first_name": "Isabelle",
+                    "middle_name": "Margaret",
+                    "last_name": "Smith",
+                    "email": "Isabelle.Smith@bgbc.edu.au",
+                    "phone": "0405301444",
+                    "dob": "2004-04-07",
+                    "gender": "female",
+                    "type": "Student",
+                    "address": {
+                        "id": 3,
+                        "complex_number": null,
+                        "street_number": 62,
+                        "street_name": "York Street",
+                        "suburb": "Nundah",
+                        "postcode": 4012
                     }
                 },
-                {
-                    "student": {
-                        "user": {
-                            "first_name": "Gabriella",
-                            "last_name": "Jones"
-                        }
-                    }
-                }
-            ]
+                "homegroup": "WH01",
+                "enrollment_date": "2020-01-01",
+                "year_level": 9,
+                "birth_country": "Australia"
+            }
         }
     ]
 }
-
 
 If not authorised:  
 
@@ -800,24 +828,23 @@ If subject id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
 {
-    "error": "Subject not found with id 11ACC."
+    "error": "Class not found with id 09EE06-2023."
 }
 ```
 
 - Methods:  ['PUT', 'PATCH']
-- Arguments: id (a string of the subject ID of the subject to update)
-- Description: Updates the subject instance of the subject with the id number provided in the URI parameter.
+- Arguments: id (a string of the subject_class ID of the subject to update)
+- Description: Updates the subject_class instance of the subject_class with the id number provided in the URI parameter.
 - Authentication: @jwt_required()  
 - Headers-Authorization: Bearer {Token}- only employees with admin access.
 - Request Body: Include any fields you wish to update:
 
 ```JSON
 {
-    "id": "10SCI",
-    "name": "Junior Science",
-    "year_level": 10,
-    "max_students": 25,
-    "department": "Science"
+    "id": "09MAB01-2023",
+    "room": "SA1.9",
+    "timetable_line": 3,
+    "employee_id": 2
 }
 ```
 
@@ -825,12 +852,23 @@ If subject id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
 {
-    "id": "10SCI",
-    "name": "Junior Science",
-    "year_level": 10,
-    "max_students": 25,
-    "department": "Science",
-    "subject_classes": []
+    "id": "09MAB01-2023",
+    "room": "SA1.9",
+    "timetable_line": 3,
+    "subject": {
+        "id": "09MAB",
+        "name": "Maths Beta",
+        "year_level": 9,
+        "max_students": 25,
+        "department": "Maths"
+    },
+    "employee_id": 2,
+    "employee": {
+        "user": {
+            "first_name": "Damion",
+            "last_name": "Burns"
+        }
+    }
 }
 ```
 
@@ -841,16 +879,16 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
-If subject id provided in the URI parameter doesn't exist in the database:
+If subject_class id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
 {
-    "error": "Subject not found with id 11ACC."
+    "error": "Class not found with id 09MAB01-2024."
 }
 ```
 
 - Methods:  [DELETE]
-- id (a string of the subject ID of the subject to update)
+- id (a string of the subject_class ID of the subject_class to delete)
 - Description: Deletes the subject instance of the subject with the id number provided in the URI parameter.
 - Authentication: @jwt_required()  
 - Headers-Authorization: Bearer {Token}- only employees with admin access.
@@ -859,7 +897,7 @@ If subject id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
 {
-    "message": "Year 10 Junior Science (10SCI) was deleted successfully."
+    "message": "The records for the Subject Class ID 09MAB01-2023 were deleted successfully"
 }
 ```
 
@@ -875,6 +913,6 @@ If subject id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
 {
-    "error": "Subject not found with id 11ACC."
+    "error": "Class not found with id 09MAB01-2024."
 }
 ```

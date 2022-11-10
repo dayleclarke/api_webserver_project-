@@ -5,7 +5,7 @@ from models.subject_class import SubjectClass, SubjectClassSchema
 from models.subject import Subject, SubjectSchema
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from pprint import pprint
-from controllers.auth_controller import auth_admin, auth_self
+from controllers.auth_controller import auth_admin, auth_employee
 
 # Add a blueprint for subjects. This will automatically add the prefix subject to the start of all URL's with this blueprint. 
 subjects_bp = Blueprint('subjects', __name__, url_prefix='/subjects') 
@@ -123,16 +123,19 @@ def create_subject_class(subject_id):
 
 
 # READ SubjectClass
-@subjects_bp.route('/classes') 
+@subjects_bp.route('/classes/') 
+@jwt_required()
 def get_all_subject_classes():
     # A route to return all instances of the classes resource. (SQL: select * from subject_classes)
     stmt = db.select(SubjectClass) # Build query
     subject_classes = db.session.scalars(stmt) # Execute query
-    return SubjectClassSchema(many=True).dump(subject_classes) # Respond to client
+    return SubjectClassSchema(many=True, exclude=['enrollments']).dump(subject_classes) # Respond to client
 
 
-@subjects_bp.route('/classes/<string:subject_class_id>') 
+@subjects_bp.route('/classes/<string:subject_class_id>/')
+@jwt_required() 
 def get_one_subject_class(subject_class_id):
+    auth_employee()
     # A route to return one instance of a subject class based on the subject_class_id. 
     stmt = db.select(SubjectClass).filter_by(id=subject_class_id)
     subject_classes = db.session.scalar(stmt)
@@ -145,7 +148,9 @@ def get_one_subject_class(subject_class_id):
 
 # UPDATE SubjectClass
 @subjects_bp.route('/classes/<string:subject_class_id>/', methods=['PUT', 'PATCH']) 
+@jwt_required() 
 def update_one_subject_class(subject_class_id):
+    auth_admin()
 # A route to update one subject_class resource (SQL: Update subjects_classes set .... where id = id)
     stmt = db.select(SubjectClass).filter_by(id=subject_class_id) # Build query
     subject_class = db.session.scalar(stmt) # Execute query
@@ -161,16 +166,16 @@ def update_one_subject_class(subject_class_id):
         db.session.add(subject_class)
         db.session.commit()
         # Respond to client
-        return SubjectClassSchema().dump(subject_class), 201
+        return SubjectClassSchema(exclude=['enrollments']).dump(subject_class), 201
     # If there is no student in a database with that provided id return a not found (404) error with a custom error message.
     else:  
         return {'error': f'Class not found with id {subject_class_id}.'}, 404
 
 # DELETE SubjectClass
 @subjects_bp.route('/classes/<string:subject_class_id>/', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_one_subject_class(subject_class_id):
-    # authorize()
+    auth_admin()
     # A route to delete one subject_class resource (SQL: Delete from subject_classes where id=subject_class_id)
     stmt = db.select(SubjectClass).filter_by(id=subject_class_id) # Build query to select the subject_class
     subject_class = db.session.scalar(stmt) # Execute query
