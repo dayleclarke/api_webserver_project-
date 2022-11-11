@@ -19,7 +19,7 @@ class StudentRelation(db.Model):
     student = db.relationship('Student', back_populates='student_relations')
     
 class StudentRelationSchema(ma.Schema):
-    user = fields.Nested('UserSchema', exclude= ['id','password', 'employee', 'student', 'student_relations'])
+    user = fields.Nested('UserSchema', exclude= ['id','password', 'employee', 'student', 'student_relations', 'address'])
     student = fields.Nested('StudentSchema', only = ['user.first_name', 'user.last_name'])
    
     class Meta:

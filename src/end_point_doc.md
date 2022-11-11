@@ -37,6 +37,15 @@ For a student:
     }
 ```
 
+For a caregiver:
+
+```JSON
+{ 
+    "email": "janet.stone12@gmail.com",
+    "password": "ChangeMe2**"
+}
+```
+
 - Request response:
   
 ```JSON
@@ -563,6 +572,244 @@ If not authorised:
 ```JSON
 {
     "error": "You are not authorized to perform this action"
+}
+```
+## Student Routes
+
+### /students/
+
+#### Methods: POST  
+
+- Arguments: None  
+- Description: Creates a new user and student instance in the database  
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token} - only admin can create a new student instance.  
+- Request Body:
+
+```JSON
+{   "title": "Ms",
+    "first_name": "Sophie",
+    "middle_name": "Anne",
+    "last_name": "Long",
+    "password": "hamAnd335*",
+    "email": "sophie.long@bgbc.edu.au",
+    "phone": "0414563531",
+    "dob": "2008-09-02",
+    "gender": "female",
+    "type": "Student",
+    "student": {
+            "homegroup": "WH01",
+            "enrollment_date": "2022-01-01",
+            "year_level": 9,
+            "birth_country": "Australia"
+        }
+}
+
+```
+
+- Request response:
+
+ ```JSON
+{
+    "id": 8,
+    "user": {
+        "title": "Ms",
+        "first_name": "Sophie",
+        "middle_name": "Anne",
+        "last_name": "Long",
+        "email": "sophie.long4@bgbc.edu.au",
+        "phone": "0414563531",
+        "dob": "2008-09-02",
+        "gender": "female",
+        "type": "Student",
+    },
+    "homegroup": "WH01",
+    "enrollment_date": "2022-01-01",
+    "year_level": 9,
+    "birth_country": "Australia"
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+If username already taken:
+
+```JSON
+{
+    "error": "Email address already in use"
+}
+
+
+```
+#### Methods: GET  
+
+- Arguments: None  
+- Description: Returns a JSON list of all the students stored in the database. There will also be a nested object containing their user information.
+- Authentication: @jwt_required()
+- Headers-Authorization: Bearer {Token} - employees only (both admin and non admin).  
+- Request Body: None
+- Request Response:  
+
+```JSON
+[
+    {
+        "id": 1,
+        "user": {
+            "title": "Miss",
+            "first_name": "Isabelle",
+            "middle_name": "Margaret",
+            "last_name": "Smith",
+            "email": "Isabelle.Smith@bgbc.edu.au",
+            "phone": "0405301444",
+            "dob": "2004-04-07",
+            "gender": "female",
+            "type": "Student",
+        },
+        "homegroup": "WH01",
+        "enrollment_date": "2020-01-01",
+        "year_level": 9,
+        "birth_country": "Australia"
+    },
+    },...]
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+### /students/\<int:student_id\>  
+
+- Methods: GET  
+- Arguments: id (an integer of the student_id whose record is to be returned)
+- Description: Returns the student instance of the student with the id number provided in the URI parameter. A nested user object from the parent table “user” is also included and the child table “student_relations”.  This route makes it efficient for a teacher to query a student and find relevant information about the student.  This includes their caregiver’s information because this is frequently needed by teachers when contacting parents for behavioural issues. A student can also look at their own information to ensure their details are correct.   
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}-only employees or the student with the id in the restful URI parameter provided.
+- Request Body: None
+- Request Response:
+
+```JSON
+{
+    "id": 1,
+    "user": {
+        "title": "Miss",
+        "first_name": "Isabelle",
+        "middle_name": "Margaret",
+        "last_name": "Smith",
+        "email": "Isabelle.Smith@bgbc.edu.au",
+        "phone": "0405301444",
+        "dob": "2004-04-07",
+        "gender": "female",
+        "type": "Student"
+    },
+    "homegroup": "WH01",
+    "enrollment_date": "2020-01-01",
+    "year_level": 9,
+    "birth_country": "Australia",
+    "student_relations": [
+        {
+            "user": {
+                "title": "Mrs",
+                "first_name": "Janet",
+                "middle_name": "Jane",
+                "last_name": "Stone",
+                "email": "janet.stone12@gmail.com",
+                "phone": "0405301554",
+                "dob": "1975-12-07",
+                "gender": "female",
+                "type": "Caregiver",
+                "address": null
+            },
+            "relationship_to_student": "Mother",
+            "is_primary_contact": true
+        }
+    ]
+}
+```
+
+#### Methods:  ['PUT', 'PATCH']
+
+- Arguments: id (an integer of the student ID to identify the student object to update)
+- Description: Allows an authorised employee to update one student instance. 
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}-only employees with admin access. 
+- Request Body: Include any fields you wish to update:
+
+```JSON
+{    "homegroup": "WH05",
+    "enrollment_date": "2020-01-01",
+    "year_level": 9,
+    "birth_country": "Japan"
+}
+
+
+```
+
+- Request Response: (all fields are returned)
+
+```JSON
+{
+    "id": 1,
+    "user": {
+        "title": "Miss",
+        "first_name": "Isabelle",
+        "middle_name": "Margaret",
+        "last_name": "Smith",
+        "email": "Isabelle.Smith@bgbc.edu.au",
+        "phone": "0405301444",
+        "dob": "2004-04-07",
+        "gender": "female",
+        "type": "Student"
+    },
+    "homegroup": "WH05",
+    "enrollment_date": "2020-01-01",
+    "year_level": 9,
+    "birth_country": "Japan"
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+#### Methods:  ['Delete']
+
+- Arguments: id (an integer of the student ID of the student to delete)
+- Description: Allows an authorised user to delete one student instance.
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- only employees with admin access
+- Request Body: None
+
+```JSON
+{
+    "message": "The records for the student with Student ID5 were deleted successfully"
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+```JSON
+If a student with the ID doesn’t exist:
+{
+    "error": "Student not found with id 15"
 }
 ```
 
@@ -1239,5 +1486,240 @@ If subject id provided in the URI parameter doesn't exist in the database:
 ```JSON
 {
     "error": "Class not found with id 09MAB01-2024."
+}
+```
+## Enrollment Routes
+
+### /enrollments/
+
+#### Methods: POST  
+
+- Arguments: None  
+- Description: Creates a new enrollment instance in the database  
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token} - only admin can create a new enrollment.  
+- Request Body:
+
+```JSON
+{
+    "date": "2023-01-01",
+    "subject_class_id": "09EE01-2023",
+    "student_id": 1
+}
+
+
+```
+
+- Request response:
+
+ ```JSON
+{
+{
+    "id": 5,
+    "date": "2023-01-01",
+    "subject_class_id": "09EE01-2023",
+    "student_id": 1,
+    "student": {
+        "id": 1,
+        "user": {
+            "title": "Miss",
+            "first_name": "Isabelle",
+            "middle_name": "Margaret",
+            "last_name": "Smith",
+            "email": "Isabelle.Smith@bgbc.edu.au",
+            "phone": "0405301444",
+            "dob": "2004-04-07",
+            "gender": "female",
+            "type": "Student"
+        },
+        "homegroup": "WH05",
+        "enrollment_date": "2020-01-01",
+        "year_level": 9,
+        "birth_country": "Japan"
+    }
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+
+```
+#### Methods: GET  
+
+- Arguments: None  
+- Description: Returns a JSON list of all the enrollments stored in the database. 
+- Authentication: @jwt_required()
+- Headers-Authorization: Bearer {Token} - employees only (both admin and non admin).  
+- Request Body: None
+- Request Response:  
+
+```JSON
+[
+    {
+        "id": 1,
+        "date": "2023-01-01",
+        "subject_class_id": "09EE01-2023",
+        "student_id": 1
+    },
+    {
+        "id": 2,
+        "date": "2023-01-01",
+        "subject_class_id": "09EE01-2023",
+        "student_id": 2
+    },
+    {
+        "id": 5,
+        "date": "2023-01-01",
+        "subject_class_id": "09EE01-2023",
+        "student_id": 1
+    },
+    {
+        "id": 3,
+        "date": "2023-01-01",
+        "subject_class_id": "09MAB01-2023",
+        "student_id": 1
+    },
+    {
+        "id": 4,
+        "date": "2023-01-01",
+        "subject_class_id": "09MAB01-2023",
+        "student_id": 2
+    }
+]
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+### /enrollments/\<int:id\>  
+
+- Methods: GET  
+- Arguments: id (an integer of the enrollment_id to be returned)
+- Description: Returns the  enrolment instance of enrolment with the id number provided in the URI parameter. A nested student object has also been included with information about the student enrolled in the subject.  
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- employees only (both admin and non admin).  
+- Request Body: None
+- Request Response:
+
+```JSON
+{
+    "id": 1,
+    "date": "2023-01-01",
+    "subject_class_id": "09EE01-2023",
+    "student_id": 1,
+    "student": {
+        "id": 1,
+        "user": {
+            "title": "Miss",
+            "first_name": "Isabelle",
+            "middle_name": "Margaret",
+            "last_name": "Smith",
+            "email": "Isabelle.Smith@bgbc.edu.au",
+            "phone": "0405301444",
+            "dob": "2004-04-07",
+            "gender": "female",
+            "type": "Student"
+        },
+        "homegroup": "WH05",
+        "enrollment_date": "2020-01-01",
+        "year_level": 9,
+        "birth_country": "Japan"
+    }
+}
+```
+
+#### Methods:  ['PUT', 'PATCH']
+
+- Arguments: id (an integer of the enrollment ID to identify the enrollment object to update)
+- Description: Allows an authorised employee to update one enrollment instance. 
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}-only employees with admin access. 
+- Request Body: Include any fields you wish to update:
+
+```JSON
+{
+    "date": "2023-01-01",
+    "subject_class_id": "09EE02-2023",
+    "student_id": 1
+}
+
+
+```
+
+- Request Response: (all fields are returned)
+
+```JSON
+{
+    "id": 1,
+    "date": "2023-01-01",
+    "subject_class_id": "09EE02-2023",
+    "student_id": 1,
+    "student": {
+        "id": 1,
+        "user": {
+            "title": "Miss",
+            "first_name": "Isabelle",
+            "middle_name": "Margaret",
+            "last_name": "Smith",
+            "email": "Isabelle.Smith@bgbc.edu.au",
+            "phone": "0405301444",
+            "dob": "2004-04-07",
+            "gender": "female",
+            "type": "Student"
+        },
+        "homegroup": "WH05",
+        "enrollment_date": "2020-01-01",
+        "year_level": 9,
+        "birth_country": "Japan"
+    }
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+#### Methods:  ['Delete']
+
+- Arguments: id (an integer of the enrollment ID of the enrolment instance to delete)
+- Description: Allows an authorised user to delete one enrolment.
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token}- only employees with admin access
+- Request Body: None
+
+```JSON
+{
+    "message": "The student with student_id 1 was unenrolled from 09EE02-2023 successfully."
+}
+```
+
+If not authorised:  
+
+```JSON
+{
+    "error": "You are not authorized to perform this action"
+}
+```
+
+If an enrolment with the ID doesn’t exist:
+
+```JSON
+{
+    "error": "Enrollment not found with enrollment_id 10."
 }
 ```

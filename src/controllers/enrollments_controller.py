@@ -1,7 +1,8 @@
 from flask import Blueprint, request
 from init import db, bcrypt
 from models.enrollment import Enrollment, EnrollmentSchema
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
+from controllers.auth_controller import auth_admin, auth_employee
 
 # Create enrollments blueprint
 enrollments_bp = Blueprint('enrollments', __name__, url_prefix='/enrollments') 
@@ -9,8 +10,9 @@ enrollments_bp = Blueprint('enrollments', __name__, url_prefix='/enrollments')
 #CREATE New Enrollment
 # A route to create one new enrollment
 @enrollments_bp.route('/', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_enrollment():
+    auth_admin()
     # Create a new enrollment model instance
     # This allows the user's JSON input to be passed through the Schema to apply validation. 
     data = EnrollmentSchema().load(request.json)
@@ -28,18 +30,22 @@ def create_enrollment():
 
 # READ Enrollment
 @enrollments_bp.route('/') 
+@jwt_required()
 def get_all_enrollments():
+    auth_employee()
     # A route to return all instances of the enrollments resource in assending order by subject_class_id 
     # (select * from enrollments order by subject_class_id;)
     
     stmt = db.select(Enrollment).order_by(Enrollment.subject_class_id) # Build query
     enrollments = db.session.scalars(stmt) # Execute the query
     # Return the results to the user in JSON format
-    return EnrollmentSchema(many=True).dump(enrollments)
+    return EnrollmentSchema(many=True, exclude=['student']).dump(enrollments)
 
 
 @enrollments_bp.route('/<int:id>/') 
+@jwt_required()
 def get_one_enrollment(id):
+    auth_employee()
     # A route to return one instance of a enrollment based on the enrollment id. 
     # (select * from enrollments where id = id;)
     #Make the query
@@ -54,8 +60,9 @@ def get_one_enrollment(id):
 
 # UPDATE Enrollment
 @enrollments_bp.route('/<int:id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
+@jwt_required()
 def update_one_enrollment(id):
+    auth_admin()
     # A route to update one enrollment resource (SQL: Update enrollments set .... where id = id)
     # Select the correct enrollement resource through a query
     stmt = db.select(Enrollment).filter_by(id=id) # Build  query
@@ -76,8 +83,9 @@ def update_one_enrollment(id):
 
 # DELETE Enrollment
 @enrollments_bp.route('/<int:id>/', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_one_enrollment(id):
+    auth_admin()
     # A route to delete one enrollment resource
     #(Delete from enrollments where id = id;)
     #Select the correct enrollement resource through a query
