@@ -6,7 +6,7 @@ from init import db, bcrypt
 from models.student import Student, StudentSchema
 from models.student_relation import StudentRelation, StudentRelationSchema
 from models.user import User, UserSchema
-from controllers.auth_controller import authorize, auth_employee
+from controllers.auth_controller import auth_employee, auth_admin, auth_employee_or_self
 
 # Adding a blueprint for students. This will automatically add the prefix students to the start of all URL's with this blueprint. 
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
@@ -16,35 +16,39 @@ students_bp = Blueprint('students', __name__, url_prefix='/students') # students
 @students_bp.route('/', methods=['POST'])
 @jwt_required() #Route protected by JWT but accessible by all users
 def create_user_and_student():
+    auth_admin()
     # Create a new student and user model instance for the new student.  
     # first create a new instance of the user based on the provided input. (SQL: Insert into users (title, first_name...) values...)
     data = UserSchema().load(request.json)
-    user =  User(
-        title = data['title'],
-        first_name = data['first_name'],
-        middle_name = data['middle_name'],
-        last_name = data['last_name'],
-        password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
-        email = data['email'],
-        phone = data['phone'],
-        dob = data['dob'],
-        gender = data['gender'],
-        type = data['type'] 
-    )
-    db.session.add(user)
-    db.session.commit() # commit new user to the db
-    
-    # Now create a new student instance (SQL: Insert into student (homegroup, enrolment_date...) values...)
-    student = Student(
-        user_id = user.id,
-        homegroup = data['student']['homegroup'],
-        enrollment_date = data['student']['enrollment_date'],
-        year_level = data['student']['year_level'],
-        birth_country = data['student']['birth_country']
-    )
-    db.session.add(student)
-    db.session.commit()
-    return StudentSchema().dump(student), 201
+    try:
+        user =  User(
+            title = data['title'],
+            first_name = data['first_name'],
+            middle_name = data['middle_name'],
+            last_name = data['last_name'],
+            password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
+            email = data['email'],
+            phone = data['phone'],
+            dob = data['dob'],
+            gender = data['gender'],
+            type = data['type'] 
+        )
+        db.session.add(user)
+        db.session.commit() # commit new user to the db
+        
+        # Now create a new student instance (SQL: Insert into student (homegroup, enrolment_date...) values...)
+        student = Student(
+            user_id = user.id,
+            homegroup = data['student']['homegroup'],
+            enrollment_date = data['student']['enrollment_date'],
+            year_level = data['student']['year_level'],
+            birth_country = data['student']['birth_country']
+        )
+        db.session.add(student)
+        db.session.commit()
+        return StudentSchema(exclude= ["student_relations"]).dump(student), 201
+    except IntegrityError:
+        return {'error': 'Email address already in use'}, 409
 
 # READ Student
 @students_bp.route('/')
@@ -55,16 +59,14 @@ def get_all_students():
 # A route to return all instances of the students resource in assending order by ID (SQL: select * from students order by id)
     stmt = db.select(Student).order_by(Student.id) # Build query
     students = db.session.scalars(stmt) # Execute query
-    return StudentSchema(many=True).dump(students) # Respond to client
+    return StudentSchema(many=True, exclude = ['student_relations']).dump(students) # Respond to client
 
 # This specifies a restful parameter of student_id that will be an integer. It will only match if the value passed in is an integer. 
 @students_bp.route('/<int:student_id>/') # Note this is student_id not user_id
 @jwt_required() 
 def get_one_student(student_id):
-    
+    auth_employee_or_self(student_id)
     # Find the user who made the request and check they have authorisation to view that student's details
-    authorize(student_id)
-
 
 
     # A route to retrieve a single student resource based on their student_id
@@ -81,7 +83,7 @@ def get_one_student(student_id):
 @students_bp.route('/<int:student_id>/', methods=['PUT', 'PATCH'])
 @jwt_required()
 def update_one_student(student_id):
-    authorize_employee()
+    auth_admin()
     # A route to update one student resource (SQL: Update students set .... where id = id)
     stmt = db.select(Student).filter_by(id=student_id) # Build query
     student = db.session.scalar(stmt) # Execute query
@@ -95,7 +97,7 @@ def update_one_student(student_id):
         student.birth_country = data.get('birth_country') or student.birth_country
 
         db.session.commit() # commit all changes to db      
-        return StudentSchema().dump(student) # Respond to client
+        return StudentSchema(exclude= ['student_relations']).dump(student) # Respond to client
     else:# If there is no student in a database with that provided id return a not found (404) error with a custom error message.
         return {'error': f'Student not found with student ID{student_id}.'}, 404
 

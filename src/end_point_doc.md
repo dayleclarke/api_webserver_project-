@@ -1,5 +1,93 @@
 # API Endpoints Documentation
 
+## Auth Routes
+
+### /auth/login/
+
+- Arguments: None
+- Description: A route to login and receive a token to use for authentication and authorization.
+- Authentication: None
+- Headers-Authorization: None
+- Request Body:
+
+For an admin user:
+
+```JSON
+{ 
+    "email": "damion.burns@bgbc.edu.au",
+    "password": "ChangeMe!1"
+}
+```
+
+For an employee without admin rights:
+
+```JSON
+{ 
+    "email": "danielle.clark@bgbc.edu.au",
+    "password": "ExamplePassword1!"
+}
+```
+
+For a student:
+
+```JSON
+    {
+        "email": "Isabelle.Smith@bgbc.edu.au",
+        "password": "ChangeMe1!"
+    }
+```
+
+- Request response:
+  
+```JSON
+{
+    "email": "damion.burns@bgbc.edu.au",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODE1Njg5NywianRpIjoiMzQwZGY5MDctNTJmMi00ODdmLWExZGEtMjcwYTcwMTllOWI0IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjIiLCJuYmYiOjE2NjgxNTY4OTcsImV4cCI6MTY2ODU4ODg5N30.R_qPaD62pznFcpKzdJa5_kHpxY2tHBh5ssZ3AMm9v7A",
+    "type": "Employee"
+}
+```
+
+### /auth/make_admin/\<int:employee_id>/
+
+- Arguments: id (an integer of the employee ID who is being made an admin employee)  
+- Description: Updates an existing employee (specificed in the URI) record and allows them to be set as an admin employee  
+- Authentication: @jwt_required()  
+- Headers-Authorization: Bearer {Token} - only employees with admin access can access this route.  
+- Request Body: (can include one or all the fields shown below:)
+
+```JSON
+{
+        "hired_date": "2017-01-01",
+        "job_title": "Secondary Teacher",
+        "department": "English",
+        "is_admin": true
+}
+```
+
+- Request response:
+  
+```JSON
+{
+    "id": 1,
+    "user": {
+        "id": 1,
+        "title": "Miss",
+        "first_name": "Danielle",
+        "middle_name": "Jane",
+        "last_name": "Clark",
+        "email": "danielle.clark@bgbc.edu.au",
+        "phone": "0416393531",
+        "dob": "1987-12-07",
+        "gender": "female",
+        "type": "Employee",
+    },
+    "hired_date": "2017-01-01",
+    "job_title": "Secondary Teacher",
+    "department": "English",
+    "is_admin": true
+}
+```
+
 ## User Routes
 
 ### /users/
@@ -111,7 +199,8 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
-### /userss/\<int:id\>  
+
+### /users/\<int:id\>  
 
 - Methods: GET  
 - Arguments: id (an integer of the user ID whose record is to be  returned)
@@ -172,6 +261,7 @@ If not authorised:
 ```
 
 - Request Response: (all fields are returned)
+  
 ```JSON
 {
     "id": 9,
@@ -245,6 +335,7 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
+
 ## Employee Routes
 
 ### /employees/
@@ -252,60 +343,55 @@ If not authorised:
 #### Methods: POST  
 
 - Arguments: None  
-- Description: Creates a new address and user instance in the database  
+- Description: Creates a new user and employee instance in the database  
 - Authentication: @jwt_required()  
-- Headers-Authorization: Bearer {Token} - all users are authorised to create a new address and user.  
+- Headers-Authorization: Bearer {Token} - only admin are able to create an employee instance.  
 - Request Body:
 
 ```JSON
-{   "complex_number": 14,
-    "street_number": 20,
-    "street_name": "Captain Road",
-    "suburb": "West End",
-    "postcode": 4006,
-    "users": [{
-        "title": "Ms",
-        "first_name": "Rachael",
-        "middle_name": "Anne",
-        "last_name": "Cook",
-        "password": "hamAnd335*",
-        "email": "test.coggfg4hhttt@bgbc.edu.au",
-        "phone": "0414563531",
-        "dob": "1980-09-02",
-        "gender": "female",
-        "type": "Student"
-    }]
+{    
+    "title": "Ms",
+    "first_name": "Rachael",
+    "middle_name": "Anne",
+    "last_name": "Cook",
+    "password": "hamAnd335*",
+    "email": "test.coggfg4ttt@bgbc.edu.au",
+    "phone": "0414563531",
+    "dob": "1980-09-02",
+    "gender": "female",
+    "type": "Student",
+    "employee": {
+        "hired_date": "2009-01-01",
+        "job_title": "Teacher",
+        "department": "English",
+        "is_admin": false
+        }
 }
 ```
 
 - Request response:
 
  ```JSON
-  {
 {
-    "id": 7,
-    "title": "Ms",
-    "first_name": "Rachael",
-    "middle_name": "Anne",
-    "last_name": "Cook",
-    "email": "test.coggfg4hhttt@bgbc.edu.au",
-    "phone": "0414563531",
-    "dob": "1980-09-02",
-    "gender": "female",
-    "type": "Student",
-    "student": null,
-    "employee": null,
-    "address": {
-        "id": 6,
-        "complex_number": 14,
-        "street_number": 20,
-        "street_name": "Captain Road",
-        "suburb": "West End",
-        "postcode": 4006
+    "id": 4,
+    "user": {
+        "id": 9,
+        "title": "Ms",
+        "first_name": "Rachael",
+        "middle_name": "Anne",
+        "last_name": "Cook",
+        "email": "test.coggfg4ffttt@bgbc.edu.au",
+        "phone": "0414563531",
+        "dob": "1980-09-02",
+        "gender": "female",
+        "type": "Student"
     },
-    "student_relations": []
+    "hired_date": "2009-01-01",
+    "job_title": "Teacher",
+    "department": "English",
+    "is_admin": false
 }
-    }
+
 ```
 
 If not authorised:  
@@ -319,7 +405,7 @@ If not authorised:
 #### Methods: GET  
 
 - Arguments: None  
-- Description: Returns a JSON list of all the employees stored in the database ordered in descending order by hired_date. The user's address is also nested at the end along with a neested list of the classes they currently teach with just the subject_id and subject_name.
+- Description: Returns a JSON list of all the employees stored in the database ordered in descending order by hired_date. There will also be a neested list of the classes they currently teach with just the subject_id and subject_name.
 - Authentication: @jwt_required()
 - Headers-Authorization: Bearer {Token} - employees with admin access only.  
 - Request Body: None
@@ -338,15 +424,7 @@ If not authorised:
         "phone": "0416393531",
         "dob": "1987-12-07",
         "gender": "female",
-        "type": "Employee",
-        "address": {
-            "id": 1,
-            "complex_number": 2,
-            "street_number": 20,
-            "street_name": "Rose Street",
-            "suburb": "Toowong",
-            "postcode": 4066
-        }
+        "type": "Employee"
     },
     "hired_date": "2019-01-01",
     "job_title": "Teacher",
@@ -368,6 +446,7 @@ If not authorised:
     ]
     },...]
 ```
+
 If not authorised:  
 
 ```JSON
@@ -375,11 +454,12 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
+
 ### /employees/\<int:id\>  
 
 - Methods: GET  
 - Arguments: id (an integer of the employee ID whose record is to be  returned)
-- Description: Returns the employee instance of the user with the id number provided in the URI parameter. The user's address is also nested at the end along with a neested list of the classes they currently teach with just the subject_id and subject_name.
+- Description: Returns the employee instance of the user with the id number provided in the URI parameter. A nested list of the classes they currently teach with just the subject_id and subject_name are also include.
 - Authentication: @jwt_required()  
 - Headers-Authorization: Bearer {Token}-only employees with admin access or the employee with the id in the restful URI parameter provided.
 - Request Body: None
@@ -398,15 +478,7 @@ If not authorised:
         "phone": "0405301451",
         "dob": "1985-04-07",
         "gender": "male",
-        "type": "Employee",
-        "address": {
-            "id": 2,
-            "complex_number": 12,
-            "street_number": 24,
-            "street_name": "Sand Street",
-            "suburb": "Milton",
-            "postcode": 4066
-        }
+        "type": "Employee"
     },
     "hired_date": "2010-01-01",
     "job_title": "Teacher",
@@ -425,72 +497,43 @@ If not authorised:
 
 #### Methods:  ['PUT', 'PATCH']
 
-- Arguments: id (an integer of the user ID to update)
-- Description: Allows an authorised user to update one user instance.
+- Arguments: id (an integer of the employee ID to identify the employee object to update)
+- Description: Allows an authorised employee or the employee themselves to update one employee instance. NOTE admin access can't be set through this route. Updating admin access must be done through (/auth/make_admin/<int:employee_id>/)
 - Authentication: @jwt_required()  
-- Headers-Authorization: Bearer {Token}- only employees with admin access or the user with the id in the restful URI parameter provided.
+- Headers-Authorization: Bearer {Token}-only employees with admin access or the employee with the id in the restful URI parameter provided.
 - Request Body: Include any fields you wish to update:
 
 ```JSON
 {
-    "title": "Mrs",
-    "first_name": "Rachael",
-    "middle_name": "Anne",
-    "last_name": "Aaron",
-    "password": "hamAnd335*",
-    "email": "rachael.cook@bgbc.edu.au",
-    "phone": "0414563531",
-    "dob": "1980-09-02",
-    "gender": "female",
-    "type": "Caregiver"
-
+        "hired_date": "2017-01-01",
+        "job_title": "Secondary Teacher",
+        "department": "English"
 }
-
 ```
 
 - Request Response: (all fields are returned)
-```JSON
-{
-    "id": 9,
-    "title": "Mrs",
-    "first_name": "Rachael",
-    "middle_name": "Anne",
-    "last_name": "Aaron",
-    "email": "rachael.cook@bgbc.edu.au",
-    "phone": "0414563531",
-    "dob": "1980-09-02",
-    "gender": "female",
-    "type": "Caregiver",
-    "student": null,
-    "employee": null,
-    "address": {
-        "id": 8,
-        "complex_number": 14,
-        "street_number": 20,
-        "street_name": "Captain Road",
-        "suburb": "West End",
-        "postcode": 4006
-    }
-}
-```
 
 ```JSON
 {
     "id": 1,
-    "complex_number": 1,
-    "street_number": 15,
-    "street_name": "Rosey Street",
-    "suburb": "Milton",
-    "postcode": 4065,
-    "users": [
-        {
-            "id": 1,
-            "first_name": "Danielle",
-            "last_name": "Clark",
-            "type": "Employee"
-        }
-    ]
+    "user": {
+        "id": 1,
+        "title": "Miss",
+        "first_name": "Danielle",
+        "middle_name": "Jane",
+        "last_name": "Clark",
+        "email": "danielle.clark@bgbc.edu.au",
+        "phone": "0416393531",
+        "dob": "1987-12-07",
+        "gender": "female",
+        "type": "Employee"
+    },
+    "hired_date": "2017-01-01",
+    "job_title": "Secondary Teacher",
+    "department": "English",
+    "is_admin": false
 }
+
 ```
 
 If not authorised:  
@@ -503,15 +546,15 @@ If not authorised:
 
 #### Methods:  ['Delete']
 
-- Arguments: id (an integer of the user ID to update)
-- Description: Allows an authorised user to delete one user instance.
+- Arguments: id (an integer of the employee ID of the employee to delete)
+- Description: Allows an authorised user to delete one employee instance.
 - Authentication: @jwt_required()  
 - Headers-Authorization: Bearer {Token}- only employees with admin access
 - Request Body: None
 
 ```JSON
 {
-    "message": "The records for Danielle Clark were deleted successfully."
+    "message": "The records for the employee with Employee ID 1 were deleted successfully"
 }
 ```
 
@@ -853,6 +896,7 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
+
 If subject id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
@@ -898,6 +942,7 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
+
 If subject id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
@@ -912,7 +957,7 @@ If subject id provided in the URI parameter doesn't exist in the database:
 - Authentication: @jwt_required()  
 - Headers-Authorization: Bearer {Token}- only employees with admin access.
 - Request Body: None
-- Request Response: 
+- Request Response:
 
 ```JSON
 {
@@ -935,6 +980,7 @@ If subject id provided in the URI parameter doesn't exist in the database:
     "error": "Subject not found with id 11ACC."
 }
 ```
+
 ## Subject ClassesRoutes
 
 ### /Subjects/<string:subject_id>/Classes
@@ -1101,6 +1147,7 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
+
 If subject id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
@@ -1156,6 +1203,7 @@ If not authorised:
     "error": "You are not authorized to perform this action"
 }
 ```
+
 If subject_class id provided in the URI parameter doesn't exist in the database:
 
 ```JSON
@@ -1170,7 +1218,7 @@ If subject_class id provided in the URI parameter doesn't exist in the database:
 - Authentication: @jwt_required()  
 - Headers-Authorization: Bearer {Token}- only employees with admin access.
 - Request Body: None
-- Request Response: 
+- Request Response:
 
 ```JSON
 {

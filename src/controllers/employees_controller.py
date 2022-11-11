@@ -15,34 +15,38 @@ employees_bp = Blueprint('employees', __name__, url_prefix='/employees') # emplo
 @employees_bp.route('/', methods=['POST'])
 @jwt_required()
 def create_user_and_employee():
+    auth_admin() 
     # Create a new user and employee model instance for the new employee. 
     # first create a new instance of the user based on the provided input.(SQL: Insert into users (title,first_name,...) values...)
     data = UserSchema().load(request.json) # Load applies the validation rules set on the schema.
-    user =  User(
-        title = data['title'],
-        first_name = data['first_name'],
-        middle_name = data['middle_name'],
-        last_name = data['last_name'],
-        password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
-        email = data['email'],
-        phone = data['phone'],
-        dob = data['dob'],
-        gender = data['gender'],
-        type = data['type'] 
-    )
-    db.session.add(user)
-    db.session.commit()
-    # next create a new instance of the employee based on the provided input. (SQL: Insert into employees (hired_date,job_title,...) values...)
-    employee = Employee(
-        user_id = user.id,
-        hired_date = data['employee']['hired_date'],
-        job_title = data['employee']['job_title'],
-        department = data['employee']['department'],
-        is_admin = data['employee']['is_admin']
-    )
-    db.session.add(employee)
-    db.session.commit()
-    return EmployeeSchema().dump(employee), 201
+    try:
+        user =  User(
+            title = data['title'],
+            first_name = data['first_name'],
+            middle_name = data['middle_name'],
+            last_name = data['last_name'],
+            password = bcrypt.generate_password_hash(request.json['password']).decode('utf8'),
+            email = data['email'],
+            phone = data['phone'],
+            dob = data['dob'],
+            gender = data['gender'],
+            type = data['type'] 
+        )
+        db.session.add(user)
+        db.session.commit()
+        # next create a new instance of the employee based on the provided input. (SQL: Insert into employees (hired_date,job_title,...) values...)
+        employee = Employee(
+            user_id = user.id,
+            hired_date = data['employee']['hired_date'],
+            job_title = data['employee']['job_title'],
+            department = data['employee']['department'],
+            is_admin = data['employee']['is_admin']
+        )
+        db.session.add(employee)
+        db.session.commit()
+        return EmployeeSchema(exclude = ["subject_classes"]).dump(employee), 201
+    except IntegrityError:
+        return {'error': 'Email address already in use'}, 409 
 
 # READ
 @employees_bp.route('/') 
@@ -71,30 +75,31 @@ def get_one_employee(employee_id):
 
 # UPDATE
 @employees_bp.route('/<int:employee_id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
-def update_one_empoyee(employee_id):
+@jwt_required()
+def update_one_employee(employee_id):
+    auth_admin_or_self(employee_id) # Only admin is allowed to enter a new employee
     # A route to update one employee resource (SQL: Update employees set .... where id = id)
     stmt = db.select(Employee).filter_by(id=employee_id) # Build query
     employee = db.session.scalar(stmt) # Execute query
  
-    data = EmployeeSchema().load(request.json) # this applies the validation rules set on the schema.
+    data = EmployeeSchema().load(request.json, partial=True) # this applies the validation rules set on the schema.
     
     if employee: # If an employee with that id exsists then update any provided fields
         employee.hired_date = data.get('hired_date') or employee.hired_date # The get method will return none if the key doesn't exist rather than raising an exception. 
         employee.job_title = data.get('job_title') or employee.job_title
         employee.department = data.get('department') or employee.department
-        employee.is_admin = data.get('is_admin') or employee.is_admin
+        # employee.is_admin = data.get('is_admin') or employee.is_admin
    
         db.session.commit() # commit all changes to db      
-        return EmployeeSchema().dump(employee) # Respond to client
+        return EmployeeSchema(only = ['id','user', 'hired_date', 'job_title', 'department', 'is_admin']).dump(employee) # Respond to client
     else:# If there is no employee in a database with that provided id return a not found (404) error with a custom error message.
         return {'error': f'Employee not found with employee ID {employee_id}.'}, 404
 
 # DELETE
 @employees_bp.route('/<int:employee_id>/', methods=['DELETE'])
-# @jwt_required()
+@jwt_required()
 def delete_one_employee(employee_id):
-    # authorize()
+    auth_admin() # Only admin is allowed to delete an employee record
     # A route to delete one employee resource (SQL: Delete from employees where id=employee_id)
     stmt = db.select(Employee).filter_by(id=employee_id) # Build query to select the employee
     employee = db.session.scalar(stmt)
