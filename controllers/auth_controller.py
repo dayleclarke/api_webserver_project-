@@ -57,6 +57,12 @@ def auth_employee():
     user = db.session.scalar(stmt)
     if not user.type == 'Employee':
         abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client. 
+def auth_employee():
+    user_id = get_jwt_identity()
+    stmt = db.select(User).filter_by(id=user_id)
+    user = db.session.scalar(stmt)
+    if not user.type == 'Employee':
+        abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client.
 
 def auth_admin():
     user_id = get_jwt_identity()
@@ -77,6 +83,16 @@ def authorize(student_id):
             abort(401)
     elif not user.type == 'Employee': 
         abort(401)
+
+def auth_admin_or_self(employee_id):
+    user_id = get_jwt_identity()
+    stmt = db.select(User).filter_by(id=user_id)
+    user = db.session.scalar(stmt)
+    if not user.type == 'Employee':
+        abort(401) # Abort will immediately terminate the request response cycle and send an error response message back to the client.
+    elif not user.employee.is_admin or not user.employee.id == employee_id:
+        abort(401)
+
 
 def auth_address(address_id):
     user_id = get_jwt_identity() # Get user_id from the JWT token
