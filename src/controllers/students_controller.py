@@ -6,7 +6,7 @@ from init import db, bcrypt
 from models.student import Student, StudentSchema
 from models.student_relation import StudentRelation, StudentRelationSchema
 from models.user import User, UserSchema
-from controllers.auth_controller import auth_employee, auth_admin, auth_employee_or_self, auth_parent_self
+from controllers.auth_controller import auth_employee, auth_admin, auth_employee_or_self, auth_self
 
 # Adding a blueprint for students. This will automatically add the prefix students to the start of all URL's with this blueprint. 
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
@@ -123,7 +123,7 @@ def delete_one_student(student_id):
 #CREATE Student Relation
 # A route to create one new student_relations resource.  
 @students_bp.route('/relations', methods=['POST'])
-@jwt_required()
+@jwt_required() # Any authenticated users can access this route.
 def create_student_relations():  
     # Create a new instance of the student_relation based on the provided input. (SQL: Insert into student_relations (relationship_to_student...) values...)
     data = StudentRelationSchema().load(request.json) 
@@ -142,42 +142,38 @@ def create_student_relations():
 @students_bp.route('/relations/') 
 @jwt_required()
 def get_all_student_relations():
-    auth_employee()
+    auth_employee() # Must be an authenticated employee 
 # A route to return all student_caregiver relationships recorded in assending order by student_id (SQL: select * from student_relations order by student_id)
     stmt = db.select(StudentRelation).order_by(StudentRelation.student_id) # Build query
     student_relations = db.session.scalars(stmt) # Execute query
     return StudentRelationSchema(many=True, exclude=['user', 'student']).dump(student_relations) # Respond to client
 
-# This specifies a restful parameter of user_id that will be an integer. It will only match if the value passed in is an integer.  This will allow a caregiver to check/query the student relationship
-@students_bp.route('/relations/<int:user_id>/') 
-def get_one_users_relations(user_id):
-    # auth_parent_self(student_relation_id)
-    
+# This specifies a restful parameter of caregiver_id that will be an integer. It will only match if the value passed in is an integer.  This will allow a caregiver to check/query the relationships they have on record for the students they care for. The caregiver_id is their user_id
+# @students_bp.route('/relations/<int:caregiver_id>/') 
+# @jwt_required()
+# def get_caregivers_relations(caregiver_id):
+#     auth_self(caregiver_id) # Must be the caregiver        
+#     # A route to retrieve all student_relations resources where the user_id = caregiver_id
+#     # (SQL: select * from students_relations where user_id=caregiver_id)
+#     stmt = db.select(StudentRelation).filter_by(user_id=caregiver_id) # Build query
+#     student_relations = db.session.scalars(stmt) # Execute query (scalars as one caregiver can care for multiple students.  
+#     if student_relations:  # If there are student_relations with the requested user_id then return all instances of this. 
+#         return StudentRelationSchema(many=True, exclude=['user']).dump(student_relations) #  many=True because one user might be a caregiver to multiple students. 
+#     else:
+#         # A 404 error with a custom message will be returned if there is no student_relation with that caregiver's user_id listed.  
+#         return {'error': f'Unable to find a student-caregiver relationship for the caregiver with id {caregiver_id}.'}, 404
+
+@students_bp.route('/relations/<int:student_relation_id>/') 
+def get_one_student_relation(student_relation_id):
     # A route to retrieve a single student_relation resource based on their student_relation_id
     # (SQL: select * from students_relations where id=student_relation_id)
-    stmt = db.select(StudentRelation).filter_by(user_id=user_id) # Build query
-    student_relations = db.session.scalars(stmt) # Execute query (scalar is singular as only one student_relation instance is returned. 
-    if student_relations:  # If the student_relations_id belongs to an exsiting student-caregiver relationship then return that instance
-        return StudentRelationSchema(many=True, exclude=['user']).dump(student_relations) #  many=True because one user might be a caregiver to multiple students. 
+    stmt = db.select(StudentRelation).filter_by(id=student_relation_id) # Build query
+    student = db.session.scalar(stmt) # Execute query (scalar is singular as only one student_relation instance is returned. 
+    if student:  # If the student_relations_id belongs to an exsiting student-caregiver relationship then return that instance
+        return StudentRelationSchema().dump(student) # remove the many=True because we are only returning a single student_relation. 
     else:
         # A 404 error with a custom message will be returned if there is no student_relation with that id.  
         return {'error': f'A record of the student-caregiver relationship with id {student_relation_id} was not found.'}, 404
-
-# This specifies a restful parameter of user_id that will be an integer. It will only match if the value passed in is an integer.  This will allow a caregiver to check/query the student relationship
-@students_bp.route('/relations/<int:user_id>/') 
-def get_one_users_relations(user_id):
-    # auth_parent_self(student_relation_id)
-    
-    # A route to retrieve a single student_relation resource based on their student_relation_id
-    # (SQL: select * from students_relations where id=student_relation_id)
-    stmt = db.select(StudentRelation).filter_by(user_id=user_id) # Build query
-    student_relations = db.session.scalars(stmt) # Execute query (scalar is singular as only one student_relation instance is returned. 
-    if student_relations:  # If the student_relations_id belongs to an exsiting student-caregiver relationship then return that instance
-        return StudentRelationSchema(many=True, exclude=['user']).dump(student_relations) #  many=True because one user might be a caregiver to multiple students. 
-    else:
-        # A 404 error with a custom message will be returned if there is no student_relation with that id.  
-        return {'error': f'A record of the student-caregiver relationship with id {student_relation_id} was not found.'}, 404
-
 # UPDATE
 @students_bp.route('/relations/<int:student_relation_id>/', methods=['PUT', 'PATCH'])
 # @jwt_required()

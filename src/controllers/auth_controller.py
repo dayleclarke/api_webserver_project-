@@ -71,16 +71,14 @@ def auth_employee_or_self(student_id):
     elif not user.type == 'Employee': 
         abort(401)
 
-def auth_parent_self(student_relation_id):
+def auth_self(requested_id):
     user_id = get_jwt_identity()
     stmt = db.select(User).filter_by(id=user_id)
     user = db.session.scalar(stmt)
     # If it is any student other than the student who's details they are trying to access then terminate the request response cycle and send an error response message back to the client.
-    if (user.type == 'Caregiver'):
-        if not user.id == student_id:  
-            abort(401)
-    elif not user.type == 'Employee': 
+    if not user.id == requested_id:  
         abort(401)
+
 
 def auth_admin_or_self(employee_id):
     user_id = get_jwt_identity()
