@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from init import db, bcrypt
 from models.employee import Employee, EmployeeSchema
 from models.user import User, UserSchema
-from controllers.auth_controller import auth_admin, auth_address
+from controllers.auth_controller import auth_admin, auth_address, auth_admin_or_self
 
 # Adding a blueprint for employees. This will automatically add the prefix employees to the start of all URL's with this blueprint. 
 employees_bp = Blueprint('employees', __name__, url_prefix='/employees') # employees is a resource made available through the API
@@ -56,8 +56,9 @@ def get_all_employees():
 
 # This specifies a restful parameter of employee_id that will be an integer. It will only match if the value passed in is an integer. 
 @employees_bp.route('/<int:employee_id>/') # Note this is employee_id not user_id
-# @jwt_required()
+@jwt_required()
 def get_one_employee(employee_id):
+    auth_admin_or_self(employee_id)
     # A route to retrieve a single employee resource based on their employee_id
     # (SQL: select * from employees where id=employee_id)
     stmt = db.select(Employee).filter_by(id=employee_id) # Build query
