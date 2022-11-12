@@ -20,10 +20,12 @@ class EnrollmentSchema(ma.Schema):
     #  Here we only have to list the fields we want to be jsonified.  We don't want to include a password in the schema even though it's encrypted. 
     subject_class = fields.Nested('SubjectClassSchema')
     student = fields.Nested('StudentSchema', exclude= ['student_relations'])
-    date = fields.Date(load_default=date.today()) #Sets this field to a date with today's date as the default value.
     
+
+    # Marshmallow has a more extensive and useful validation system than SQLAlchemy so the following validation requirements have been added here to the schema.
+    date = fields.Date(load_default=date.today()) #Sets this field to a date with today's date as the default value.
+
     class Meta:
         fields = ('id', 'date','subject_class_id', 'student_id', 'student')
         ordered = True 
 
-# only=['subject_id']

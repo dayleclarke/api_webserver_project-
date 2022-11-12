@@ -9,7 +9,7 @@ class StudentRelation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True) 
     relationship_to_student = db.Column(db.String(50))
-    is_primary_contact = db.Column(db.Boolean)
+    is_primary_contact = db.Column(db.Boolean, default=True)
     
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) 
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
@@ -21,6 +21,15 @@ class StudentRelation(db.Model):
 class StudentRelationSchema(ma.Schema):
     user = fields.Nested('UserSchema', exclude= ['id','password', 'employee', 'student', 'student_relations', 'address'])
     student = fields.Nested('StudentSchema', only = ['user.first_name', 'user.last_name'])
+
+    # Marshmallow has a more extensive and useful validation system than SQLAlchemy so the following validation requirements have been added here to the schema. 
+    relationship_to_student = fields.String(required=True, validate=And(
+        Length(min=3, error="Relationship must be at least 3 characters long. For example: 'Mother' or 'Temporary Carer'."),
+        Regexp('^[a-zA-Z -/]+$', error='Only letters, spaces and select punctuation characters are allowed in relationship names.')
+    ))
+    is_primary_contact = fields.Boolean(defalut=True)
+
+
    
     class Meta:
         fields = ('student_id', 'student', 'user_id', 'user', 'relationship_to_student', 'is_primary_contact')
