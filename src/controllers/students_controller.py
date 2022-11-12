@@ -6,7 +6,7 @@ from init import db, bcrypt
 from models.student import Student, StudentSchema
 from models.student_relation import StudentRelation, StudentRelationSchema
 from models.user import User, UserSchema
-from controllers.auth_controller import auth_employee, auth_admin, auth_employee_or_self, auth_self
+from controllers.auth_controller import auth_employee, auth_admin, auth_employee_or_self
 
 # Adding a blueprint for students. This will automatically add the prefix students to the start of all URL's with this blueprint. 
 students_bp = Blueprint('students', __name__, url_prefix='/students') # students is a resource made available through the API
@@ -163,8 +163,10 @@ def get_all_student_relations():
 #         # A 404 error with a custom message will be returned if there is no student_relation with that caregiver's user_id listed.  
 #         return {'error': f'Unable to find a student-caregiver relationship for the caregiver with id {caregiver_id}.'}, 404
 
-@students_bp.route('/relations/<int:student_relation_id>/') 
+@students_bp.route('/relations/<int:student_relation_id>/')
+@jwt_required() 
 def get_one_student_relation(student_relation_id):
+    auth_employee()
     # A route to retrieve a single student_relation resource based on their student_relation_id
     # (SQL: select * from students_relations where id=student_relation_id)
     stmt = db.select(StudentRelation).filter_by(id=student_relation_id) # Build query
@@ -176,8 +178,9 @@ def get_one_student_relation(student_relation_id):
         return {'error': f'A record of the student-caregiver relationship with id {student_relation_id} was not found.'}, 404
 # UPDATE
 @students_bp.route('/relations/<int:student_relation_id>/', methods=['PUT', 'PATCH'])
-# @jwt_required()
+@jwt_required()
 def update_one_student_relation(student_relation_id):
+    auth_admin()
     # A route to update a single student_relation resource based on their student_relation_id (SQL: Update student_relations set .... where id = id)
     stmt = db.select(StudentRelation).filter_by(id=student_relation_id) # Build query
     student_relation = db.session.scalar(stmt) # Execute query
@@ -212,11 +215,5 @@ def delete_one_student_relation(student_relation_id):
     else:
         return {'error': f'A record of the student-caregiver relationship with id {student_relation_id} was not found.'}, 404
 
-test_student_relation = {   
-    "relationship_to_student": "Mother",
-    "is_primary_contact": True,
-    "user_id": 1,
-    "student_id": 2
 
-}
         

@@ -74,7 +74,7 @@ def get_one_user(id):
     stmt = db.select(User).filter_by(id=id) # Build query
     user = db.session.scalar(stmt) # Execute query (scalar is singular as only one user instance is returned. 
     if user: # If the id belongs to an exsiting user then return that user instance
-        return UserSchema(exclude= ['student_relations', 'student', 'employee']).dump(user) # remove the many=True because we are only returning a single User. 
+        return UserSchema(exclude= ['student', 'employee']).dump(user) # remove the many=True because we are only returning a single User. 
     else:
         # A 404 error with a custom message will be returned if there is no user with that ID.
         return {'error': f'User not found with id {id}.'}, 404
