@@ -10,55 +10,13 @@ from sqlalchemy.exc import IntegrityError
 # Adding a blueprint for users. This will automatically add the prefix users to the start of all the following URL's with this blueprint. 
 users_bp = Blueprint('users', __name__, url_prefix='/users') # users is a resource made available through the API
 
-#CREATE
-# A route to create one new address and user resource at the same time. 
-@users_bp.route('/', methods=['POST'])
-@jwt_required()
-def create_address_and_user():
-    # Create a new Address model instance (SQL: Insert into addresses (complex_number,...) values...)
-    data = AddressSchema().load(request.json) # Load applies the validation rules set on the schema. 
-    address = Address(
-            complex_number = data.get('complex_number'), # Get allows this field to be left blank
-            street_number = data['street_number'], 
-            street_name = data['street_name'], 
-            suburb = data['suburb'], 
-            postcode = data['postcode']
-            )
-    # Add and commit address to DB
-    db.session.add(address)
-    db.session.commit()
-       
-    # Now create a new user instance (SQL: Insert into users (title, first_name...) values...)
-    try:
-
-        user = User(
-            title = data['users'][0]['title'],
-            first_name = data['users'][0]['first_name'],
-            middle_name = data['users'][0]['middle_name'],
-            last_name = data['users'][0]['last_name'],
-            password = bcrypt.generate_password_hash(request.json['users'][0]['password']).decode('utf8'),
-            email = data['users'][0]['email'],
-            phone = data['users'][0]['phone'],
-            dob = data['users'][0]['dob'],
-            gender = data['users'][0]['gender'],
-            address_id = address.id,
-            type = data['users'][0]['type'] 
-        )
-        # Add and commit user to DB
-        db.session.add(user)
-        db.session.commit()
-        # Respond to client
-        return UserSchema().dump(user), 201
-    except IntegrityError:
-        return {'error': 'Email address already in use'}, 409
-
+# CREATE: Users are created through auth/register. 
 # READ
 @users_bp.route('/')
 @jwt_required() 
 def get_all_users():
     auth_admin()
     # A route to return all instances of the users resource in assending alphabetical order by last_name (SQL: select * from users order by last_name)
-
     stmt = db.select(User).order_by(User.last_name) # Build query
     users = db.session.scalars(stmt) # Execute query
     # Respond to client
@@ -100,7 +58,7 @@ def update_one_user(id):
         user.phone = data.get('phone') or user.phone
         user.dob = data.get('dob') or user.dob
         user.gender = data.get('gender') or user.gender
-        user.type = data.get('type') or user.type
+
         
         db.session.commit()      
         return UserSchema().dump(user) # Respond to client

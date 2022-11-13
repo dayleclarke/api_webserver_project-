@@ -77,7 +77,7 @@ def get_one_employee(employee_id):
 @employees_bp.route('/<int:employee_id>/', methods=['PUT', 'PATCH'])
 @jwt_required()
 def update_one_employee(employee_id):
-    auth_admin_or_self(employee_id) # Only admin is allowed to enter a new employee
+    auth_admin_or_self(employee_id) # Only admin or the employee themselves are allowed able to update an employee
     # A route to update one employee resource (SQL: Update employees set .... where id = id)
     stmt = db.select(Employee).filter_by(id=employee_id) # Build query
     employee = db.session.scalar(stmt) # Execute query

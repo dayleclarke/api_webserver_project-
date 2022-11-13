@@ -1,10 +1,10 @@
 # This module contains the CRUD operations for the Subject and SubjectClass models.
 from flask import Blueprint, request
-from init import db, bcrypt
+from sqlalchemy.exc import IntegrityError
+from init import db
 from models.subject_class import SubjectClass, SubjectClassSchema
 from models.subject import Subject, SubjectSchema
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from pprint import pprint
+from flask_jwt_extended import jwt_required
 from controllers.auth_controller import auth_admin, auth_employee
 
 # Add a blueprint for subjects. This will automatically add the prefix subject to the start of all URL's with this blueprint. 
@@ -18,18 +18,22 @@ def create_subject():
     auth_admin()
     # Create a new Subject model instance (SQL: Insert into subjects (id, name...) values...)
     data = SubjectSchema().load(request.json) # This applies the validation rules set on the schema. 
-    subject = Subject(
-        id = data['id'], # Subject_id's are a semantic string 
-        name = data['name'],
-        year_level = data['year_level'],
-        max_students = data.get('max_students'), # Get allows this field to be left blank and the default value to be set. 
-        department = data['department']
-    )
-    # Add and commit subject to DB
-    db.session.add(subject)
-    db.session.commit()
-    # Respond to client
-    return SubjectSchema().dump(subject), 201
+    try:
+        subject = Subject(
+            id = data['id'], # Subject_id's are a semantic string 
+            name = data['name'],
+            year_level = data['year_level'],
+            max_students = data.get('max_students'), # Get allows this field to be left blank and the default value to be set. 
+            department = data['department']
+        )
+        # Add and commit subject to DB
+        db.session.add(subject)
+        db.session.commit()
+        # Respond to client
+        return SubjectSchema(exclude= ['subject_classes']).dump(subject), 201
+    except IntegrityError:
+        return {'error': 'Subject_id address already in use'}, 409
+    
 
 # READ Subject
 @subjects_bp.route('/')
@@ -63,15 +67,18 @@ def update_one_subject(id):
     subject = db.session.scalar(stmt) # Execute query
     data = SubjectSchema().load(request.json, partial=True) # This applies the validation rules set on the schema. 
     # If a subject with that id exsists then update any provided fields
-    if subject: 
-        subject.id = data.get('id') or subject.id 
-        subject.name = data.get('name') or subject.name
-        subject.year_level = data.get('year_level') or subject.year_level
-        subject.max_students = data.get('max_students') or subject.max_students
-        subject.department = data.get('department') or subject.department
-              
-        db.session.commit()      
-        return SubjectSchema().dump(subject)
+    if subject:
+        try: 
+            subject.id = data.get('id') or subject.id 
+            subject.name = data.get('name') or subject.name
+            subject.year_level = data.get('year_level') or subject.year_level
+            subject.max_students = data.get('max_students') or subject.max_students
+            subject.department = data.get('department') or subject.department
+                
+            db.session.commit()      
+            return SubjectSchema().dump(subject)
+        except IntegrityError:
+            return {'error': 'Subject_id address already in use'}, 409
     else:
     # A 404 error with a custom message will be returned if there is no subject with that id. 
         return {'error': f'Subject not found with id {id}.'}, 404
@@ -105,18 +112,21 @@ def create_subject_class(subject_id):
     subject = db.session.scalar(stmt) # Execute query
     # if the subject included in the URL parameter is valid then add an instance of the SubjectClass
     if subject:
-        subject_class = SubjectClass(
-            id = data['id'],
-            employee_id = data['employee_id'],
-            room = data['room'],
-            timetable_line = data['timetable_line'],
-            subject = subject
-        )
-        # Add and commit subject_class to DB
-        db.session.add(subject_class)
-        db.session.commit()
-        # Respond to client
-        return SubjectClassSchema(exclude=['enrollments']).dump(subject_class), 201
+        try:
+            subject_class = SubjectClass(
+                id = data['id'],
+                employee_id = data['employee_id'],
+                room = data['room'],
+                timetable_line = data['timetable_line'],
+                subject = subject
+            )
+            # Add and commit subject_class to DB
+            db.session.add(subject_class)
+            db.session.commit()
+            # Respond to client
+            return SubjectClassSchema(exclude=['enrollments']).dump(subject_class), 201
+        except IntegrityError:
+            return {'error': 'Either the subject_class_id is already in use or there is not teacher in the system with that employee_id.'}, 409
     # If there is no subject in a database with that provided id return a not found (404) error with a custom error message.
     else:
         return {'error': f'Subject not found with id {subject_id}.'}, 404
@@ -156,17 +166,20 @@ def update_one_subject_class(subject_class_id):
     subject_class = db.session.scalar(stmt) # Execute query
 
     data = SubjectClassSchema().load(request.json) # this applies the validation rules set on the schema.
-    if subject_class:  # If a subject_class with that id exsists then update any provided fields  
-        subject_class.id = data.get('id') or subject_class.id,
-        subject_class.employee_id = data.get('employee_id') or subject_class.employee_id,
-        subject_class.room = data.get('room') or subject_class.room,
-        subject_class.timetable_line = data.get('timetable_line') or subject_class.timetable_line
-    
-        # Add and commit subject_class to DB
-        db.session.add(subject_class)
-        db.session.commit()
-        # Respond to client
-        return SubjectClassSchema(exclude=['enrollments']).dump(subject_class), 201
+    if subject_class:  # If a subject_class with that id exsists then update any provided fields 
+        try: 
+            subject_class.employee_id = data.get('employee_id') or subject_class.employee_id,
+            subject_class.room = data.get('room') or subject_class.room,
+            subject_class.timetable_line = data.get('timetable_line') or subject_class.timetable_line
+        
+            # Add and commit subject_class to DB
+            db.session.add(subject_class)
+            db.session.commit()
+            # Respond to client
+            return SubjectClassSchema(exclude=['enrollments']).dump(subject_class), 201
+        except IntegrityError:
+            return {'error': 'Either the subject_class_id is already in use or there is no teacher with that employee_id'}, 409
+        
     # If there is no student in a database with that provided id return a not found (404) error with a custom error message.
     else:  
         return {'error': f'Class not found with id {subject_class_id}.'}, 404

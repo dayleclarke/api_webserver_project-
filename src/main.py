@@ -31,6 +31,10 @@ def create_app():
     def not_found(err): 
         return {'error': str(err)}, 404
     
+    @app.errorhandler(405)
+    def not_allowed(err): 
+        return {'error': str(err)}, 405
+    
     @app.errorhandler(KeyError)
     def key_error(err):
         return {'error': f'The field {err} is required.'}, 400

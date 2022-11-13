@@ -5,7 +5,7 @@ from marshmallow.validate import Length, OneOf, And, Regexp
 from marshmallow.exceptions import ValidationError
 
 # This is a constant containing a tuple of all the valid types of users that are excepted for the User type attrbitue 
-VALID_TYPES = ('Employee', 'Caregiver', 'Student', 'Other')
+VALID_TYPES = ('Employee', 'Caregiver', 'Student', 'Other', 'TBC')
 
 class User(db.Model):
     #A model is created for the User entity to provide an abstract representation the users table. A model is a python class that represents a table where each class attribute is a field (column) of the table.  This class inherits from the db.Model. 
@@ -23,7 +23,7 @@ class User(db.Model):
     phone = db.Column(db.String(20), nullable= False)
     dob = db.Column(db.Date) 
     gender = db.Column(db.String(50))
-    type = db.Column(db.String(9), nullable= False)
+    type = db.Column(db.String(9), default= "TBC") # Users will need to have their type set by an admin employee as their type gives them access rights to different routes in the API. 
 
     # User is linked to the addresses table by the foreign key addresses id (which is that model’s primary key). User represents the child side of this one-to-many relationship as each user has only one address, but each address can belong to multiple users.
     
@@ -67,7 +67,7 @@ class UserSchema(ma.Schema):
     phone= fields.String(required = True, validate= Regexp('^[0-9 ()+]+$', error="Please provide a valid phone number"))
     dob = fields.Date()
     gender = fields.String(load_default=None, validate= Regexp('^[a-zA-Z. &-:;]+$', error='You have entered a character that is not permitted when describing gender such as a number or special character'))
-    type = fields.String(required = True, validate=OneOf(VALID_TYPES, error="The user type must be either an 'Employee', 'Student','Caregiver' or 'Other'."))
+    type = fields.String(load_default='TBC', validate=OneOf(VALID_TYPES, error="The user type must be either an 'Employee', 'Student','Caregiver' 'Other' or 'TBC'."))
 
     @validates('dob') 
     def validate_dob(self, value): # The value is the dob entered by the user. 

@@ -12,7 +12,7 @@ class Employee(db.Model):
     hired_date = db.Column(db.Date, nullable=False) 
     job_title = db.Column(db.String(128), nullable=False)
     department = db.Column(db.String(50), nullable=False)
-    is_admin = db.Column(db.Boolean, defalut=False)
+    is_admin = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, unique=True) # perhaps make this unique to force only one user
     
     user = db.relationship('User', back_populates='employee')
@@ -35,8 +35,8 @@ class EmployeeSchema(ma.Schema):
         Length(min=5, error='Department must be at least 5 characters long'),
         Regexp('^[a-zA-Z ]+$', error='Only letters, and spaces are allowed in department names.')
     ))
-    is_admin = fields.Boolean(defalut=False)
-    
+    is_admin = fields.Boolean(load_default=False)
+
     @validates('hired_date') 
     def validate_hired_date(self, value): # The value is the hired date entered by the user. 
         #If the enrollment date is after today's date than raise a validation error.

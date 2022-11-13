@@ -67,8 +67,6 @@ def get_all_students():
 def get_one_student(student_id):
     auth_employee_or_self(student_id)
     # Find the user who made the request and check they have authorisation to view that student's details
-
-
     # A route to retrieve a single student resource based on their student_id
     # (SQL: select * from students where id=student_id)
     stmt = db.select(Student).filter_by(id=student_id) # Build query
@@ -124,7 +122,8 @@ def delete_one_student(student_id):
 # A route to create one new student_relations resource.  
 @students_bp.route('/relations', methods=['POST'])
 @jwt_required() # Any authenticated users can access this route.
-def create_student_relations():  
+def create_student_relations():
+    auth_admin()  
     # Create a new instance of the student_relation based on the provided input. (SQL: Insert into student_relations (relationship_to_student...) values...)
     data = StudentRelationSchema().load(request.json) 
     student_relation =  StudentRelation(       

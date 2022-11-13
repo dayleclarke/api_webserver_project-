@@ -52,7 +52,7 @@ class AddressSchema(ma.Schema):
     suburb = fields.String(required=True, validate=
         Length(min=2, error='Suburb name must be at least 2 characters long'))
     postcode = fields.Integer(required=True, validate=Range(min=200, max=9999)) # smallest Australian postcode is 200 (in the ACT) and the largest is 9999 (in QLD)
-    users = fields.List(fields.Nested('UserSchema', exclude=['address'] ))
+    users = fields.List(fields.Nested('UserSchema', exclude=['address','student_relations', 'student', 'employee'] ))
  
     
     class Meta:

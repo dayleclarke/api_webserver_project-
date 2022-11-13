@@ -27,7 +27,7 @@ class StudentRelationSchema(ma.Schema):
         Length(min=3, error="Relationship must be at least 3 characters long. For example: 'Mother' or 'Temporary Carer'."),
         Regexp('^[a-zA-Z -/]+$', error='Only letters, spaces and select punctuation characters are allowed in relationship names.')
     ))
-    is_primary_contact = fields.Boolean(defalut=True)
+    is_primary_contact = fields.Boolean(default =True)
 
 
    

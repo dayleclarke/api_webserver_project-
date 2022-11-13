@@ -28,7 +28,7 @@ def create_address():
     db.session.add(address)
     db.session.commit()
     #  The following return statement will be the response the server sends across the network to the client:  
-    return AddressSchema().dump(address), 201 # The result is automatically Jsonified.
+    return AddressSchema(exclude= ['users']).dump(address), 201 # The result is automatically Jsonified.
 
 # READ
 @addresses_bp.route('/') 

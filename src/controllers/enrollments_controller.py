@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from init import db, bcrypt
 from models.enrollment import Enrollment, EnrollmentSchema
+from sqlalchemy.exc import IntegrityError
 from flask_jwt_extended import jwt_required
 from controllers.auth_controller import auth_admin, auth_employee
 
@@ -17,16 +18,20 @@ def create_enrollment():
     # This allows the user's JSON input to be passed through the Schema to apply validation. 
     data = EnrollmentSchema().load(request.json)
 
-    enrollment = Enrollment(
-        date = data['date'],
-        subject_class_id = data['subject_class_id'],
-        student_id = data['student_id']
-    )
-    # Add and commit enrollment to DB
-    db.session.add(enrollment)
-    db.session.commit()
-    # Respond to client
-    return EnrollmentSchema().dump(enrollment), 201
+    try:
+        enrollment = Enrollment(
+            date = data['date'],
+            subject_class_id = data['subject_class_id'],
+            student_id = data['student_id']
+        )
+        # Add and commit enrollment to DB
+        db.session.add(enrollment)
+        db.session.commit()
+        # Respond to client
+        return EnrollmentSchema().dump(enrollment), 201
+    except IntegrityError:
+            return {'error': 'Foriegn Key Error. Either the student_id or subject_class_id does not exsit in the database'}, 409
+    
 
 # READ Enrollment
 @enrollments_bp.route('/') 
@@ -70,13 +75,16 @@ def update_one_enrollment(id):
     # If an enrollment exists with the specified id update the resource attributes to match those provided in the JSON body. If a field is not provided leave it as it was before.
     data = EnrollmentSchema().load(request.json) # This allows the user's JSON input to be passed through the Schema to apply validation.
     if enrollment: 
-        enrollment.id = data.get('id') or enrollment.id 
-        enrollment.date = data.get('date') or enrollment.date
-        enrollment.subject_class_id = data.get('subject_class_id') or enrollment.subject_class_id
-        enrollment.student_id = data.get('student_id') or enrollment.student_id   
+        try:
+            enrollment.id = data.get('id') or enrollment.id 
+            enrollment.date = data.get('date') or enrollment.date
+            enrollment.subject_class_id = data.get('subject_class_id') or enrollment.subject_class_id
+            enrollment.student_id = data.get('student_id') or enrollment.student_id   
 
-        db.session.commit() # Commit update      
-        return EnrollmentSchema().dump(enrollment)
+            db.session.commit() # Commit update      
+            return EnrollmentSchema().dump(enrollment)
+        except IntegrityError:
+            return {'error': 'Foriegn Key Error. Either the student_id or subject_class_id does not exsit in the database'}, 409
     else:
     # A 404 error with a custom message will be returned if there is no enrolment with that id. 
         return {'error': f'Enrolment not found with enrolment_id {id}.'}, 404
@@ -100,9 +108,3 @@ def delete_one_enrollment(id):
     else:
         return {'error': f'Enrollment not found with enrollment_id {id}.'}, 404
 
-test_enrollment = {
-    "date": "2023-01-01",
-    "subject_class_id": "09EE01-2023",
-    "student_id": 1
-}
-        
